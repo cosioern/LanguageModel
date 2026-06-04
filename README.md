@@ -26,4 +26,6 @@ I recommend setting up a Conda environment as I have:
 
 Training a Qwen 2.5 3B with 1.5 million tokens at 2-3 epochs.
 QLoRA training.
-This is the most I can do with my hardware.
+This is the most I can do with my hardware. 
+/Reports directory contains pdfs with market reports or similar documents
+/Raw directory contains sequentially named .txt files parallel to the /Reports

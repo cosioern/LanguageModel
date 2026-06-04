@@ -20,17 +20,18 @@ def main():
     folderIn = "Reports"
     folderOut = "Raw"
     parsePDF(folderIn, folderOut)
+    distilText(folderOut)
     print("Done")
 
 # turn pdf into text file, naming scheme: fileX.txt
 def parsePDF(folderIn, folderOut):
 
     # determine the number of files to convert to text
-    folder = Path(folderIn)
+    inDir = Path(folderIn)
     outDir = Path(folderOut)
 
     x = 1
-    for item in folder.iterdir():
+    for item in inDir.iterdir():
         if item.is_file():
 
             # skip empty files
@@ -43,6 +44,12 @@ def parsePDF(folderIn, folderOut):
             if (not doc.is_pdf):
                 continue
 
+            # print TOC
+            toc = doc.get_toc()
+            
+            if (not toc):
+                print("Must Infer TOC")
+
             # generate rawX.txt for each report (and each page)
             outFile = "raw" + str(x) + ".txt"
             out = open(outDir / outFile, "wb")
@@ -54,6 +61,36 @@ def parsePDF(folderIn, folderOut):
             print(outFile + " generated for " + item.name)
             x += 1
 
+""" Distil text files into useable input and output blocks
+    1. Split text files into blocks (sections between newlines) of size > X characters
+    2. Determine if block should be classified input or output based on 
+        matched certain keywords. Drop block if does not contain keywords count > Y
+    3. Match adjacent/consecutive input and output blocks to create training pairs
+
+"""
+def distilText(folderOut):
+
+    minCharCount = 50
+    # keywords for input blocks
+    inputWords = ["construction", "vacancy", "rent", "occupiers", "families"]
+    # keywords for output blocks
+    outputWords = ["real estate", "investment activity" "leasing activity"]
+
+    # words = page.get_text("words")
+    # word_count = len(words)
+
+    # for each raw text file
+    folder = Path(folderOut)
+    for item in folder.iterdir():
+        print(item.name)
+        with open(item, "r", encoding="utf-8") as f:
+            text = f.read()
+        blocks = text.split("\n")
+        filtered = [b for b in blocks if len(b.strip()) >= minCharCount]
+        print("\n".join(filtered))
+
+            # # helper function removing small sections of text from raw file
+            # def dropSmallSections(item):
 
 
 
