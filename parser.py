@@ -1,7 +1,11 @@
 # python imports
 import pymupdf
-from pathlib import Path 
+from pathlib import Path
+import re
 
+minCharCount = 50
+folderIn = "Reports"
+folderOut = "Raw"
 
 def main():
 
@@ -17,49 +21,58 @@ def main():
     3. Turn into sequentially-named file, in/out separated by \n
     
     """ 
-    folderIn = "Reports"
-    folderOut = "Raw"
+    #
     parsePDF(folderIn, folderOut)
     distilText(folderOut)
     print("Done")
 
-# turn pdf into text file, naming scheme: fileX.txt
 def parsePDF(folderIn, folderOut):
-
-    # determine the number of files to convert to text
     inDir = Path(folderIn)
     outDir = Path(folderOut)
 
     x = 1
     for item in inDir.iterdir():
-        if item.is_file():
+        if not item.is_file() or item.stat().st_size == 0:
+            continue
 
-            # skip empty files
-            if item.stat().st_size == 0:
-                continue
+        doc = pymupdf.open(item)
+        if not doc.is_pdf:
+            continue
 
-            doc = pymupdf.open(item)
-
-            # skip non pdfs
-            if (not doc.is_pdf):
-                continue
-
-            # print TOC
-            toc = doc.get_toc()
-            
-            if (not toc):
-                print("Must Infer TOC")
-
-            # generate rawX.txt for each report (and each page)
-            outFile = "raw" + str(x) + ".txt"
-            out = open(outDir / outFile, "wb")
+        outFile = "raw" + str(x) + ".txt"
+        with open(outDir / outFile, "w", encoding="utf-8") as out:
             for page in doc:
-                text = page.get_text().encode("utf8")
-                out.write(text)
-                out.write(bytes((12,)))
-            out.close()
-            print(outFile + " generated for " + item.name)
-            x += 1
+                blocks = page.get_text("blocks")
+                
+                # Collect and clean text blocks first
+                cleaned = []
+                for block in blocks:
+                    if block[6] != 0:
+                        continue
+                    paragraph = " ".join(block[4].splitlines())
+                    paragraph = " ".join(paragraph.split())
+                    if len(paragraph) < minCharCount:
+                        continue
+                    cleaned.append(paragraph)
+
+                # Merge blocks that don't end with terminal punctuation
+                merged = []
+                buffer = ""
+                for paragraph in cleaned:
+                    if buffer:
+                        buffer = buffer + " " + paragraph
+                    else:
+                        buffer = paragraph
+                    
+                    if buffer.endswith((".", "?", "!")):
+                        merged.append(buffer)
+                        buffer = ""
+                
+                if buffer:  # flush any remaining text
+                    merged.append(buffer)
+
+                for paragraph in merged:
+                    out.write(paragraph + "\n\n")
 
 """ Distil text files into useable input and output blocks
     1. Split text files into blocks (sections between newlines) of size > X characters
@@ -70,7 +83,7 @@ def parsePDF(folderIn, folderOut):
 """
 def distilText(folderOut):
 
-    minCharCount = 50
+    # minCharCount = 50
     # keywords for input blocks
     inputWords = ["construction", "vacancy", "rent", "occupiers", "families"]
     # keywords for output blocks
@@ -85,14 +98,37 @@ def distilText(folderOut):
         print(item.name)
         with open(item, "r", encoding="utf-8") as f:
             text = f.read()
-        blocks = text.split("\n")
-        filtered = [b for b in blocks if len(b.strip()) >= minCharCount]
-        print("\n".join(filtered))
 
-            # # helper function removing small sections of text from raw file
-            # def dropSmallSections(item):
+    # normalize only PDF artifacts
+    text = text.replace("\r\n", "\n")
+    text = text.replace("\x0c", "\n")
 
+    # rebuild paragraph-like blocks
+    lines = text.split("\n")
 
+    rebuilt = []
+    buffer = []
+
+    for line in lines:
+        line = line.strip()
+
+        if not line:
+            if buffer:
+                rebuilt.append(" ".join(buffer))
+                buffer = []
+        else:
+            buffer.append(line)
+
+    if buffer:
+        rebuilt.append(" ".join(buffer))
+
+    filtered = [
+        b.strip()
+        for b in rebuilt
+        if len(b.strip()) >= minCharCount
+    ]
+
+    print("\n\n".join(filtered))
 
 # gotta be at bottom, py runs top to bottom
 if __name__ == "__main__":
