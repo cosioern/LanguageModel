@@ -6,16 +6,8 @@ import re
 minCharCount = 50
 folderIn = "Reports"
 folderOut = "Raw"
-inputWords = ["construction", "vacancy", "rent", "occupiers", "families"]
-outputWords = ["real estate", "investment activity" "leasing activity"]
 
 def main():
-
-    # extract certain data based on keywords in/out
-
-    # spit out into text file with names such as inX.text (where Xth number denotes
-    # how many files have been ingested / processed)
-
     """ Rules:
     Input/Output text must not overlap
     1. Select sentence with conclusion (output)
@@ -25,7 +17,7 @@ def main():
     """ 
     
     # run parser
-    parser(folderIn, folderOut)
+    parser()
     print("Done")
 
 
@@ -38,7 +30,7 @@ def main():
 
 """
 
-def parser(folderIn, folderOut):
+def parser():
     inDir = Path(folderIn)
     outDir = Path(folderOut)
 
@@ -79,7 +71,7 @@ def parser(folderIn, folderOut):
                 if buffer:
                     merged.append(buffer)
 
-                out.write("\n\n".join(merged) + "\n\n")
+                out.write("\n".join(merged) + "\n\n")
 
         print(outFile + " generated for " + item.name)
         x += 1
