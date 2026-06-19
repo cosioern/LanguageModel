@@ -3,7 +3,7 @@ import pymupdf
 from pathlib import Path
 import re
 
-minCharCount = 50
+minCharCount = 100
 folderIn = "Reports"
 folderOut = "Raw"
 
@@ -54,8 +54,8 @@ def parser():
                         continue
                     paragraph = " ".join(block[4].splitlines())
                     paragraph = " ".join(paragraph.split())
-                    if len(paragraph) < minCharCount:
-                        continue
+                    # if len(paragraph) < minCharCount:
+                    #     continue
                     cleaned.append(paragraph)
 
                 merged = []
@@ -66,7 +66,8 @@ def parser():
                     else:
                         buffer = paragraph
                     if buffer.endswith((".", "?", "!")):
-                        merged.append(buffer)
+                        if len(buffer) >= minCharCount:
+                            merged.append(buffer)
                         buffer = ""
                 if buffer:
                     merged.append(buffer)

@@ -4,13 +4,32 @@ import re
 inputDirectory = Path("Raw")
 outputDirectory = Path("TrainingDirectry")
 
-promptKeys = ["construction", "vacancy", "rent", "occupiers", "families"]
-responseKeys = ["real estate", "investment activity" "leasing activity"]
+# promptKeys = ["construction", "vacancy", "rent", "occupiers", "families"]
+# responseKeys = ["real estate", "investment activity" "leasing activity"]
+""" Property Value = NOI / CR ~ if cap rate falls an NOI remains same, property values increase.
+    Good for current holders (can sell higher). Current buyers are betting on future growth.
+"""
+# better to have fewer, more specifically relevant keywords + lower count barrier
+promptKeys =    ["market conditions", "inflation", "supply and demand", "vacancy", "net absorption", 
+                "market share"
+                ]
+responseKeys = ["real estate", "investment activity", "cap rates", "leasing activity", 
+                "leasing volume", "depreciate", "we expect", "will likely", "expected to", 
+                "fundamentals", "supply overhang", "will continue", "we remain", "is expected",
+                "should continue"
+                ]
+discardKeys =   ["copyright", "all rights reserved", "disclaimer"
+
+                ]
+
 
 def main():
     classify()
 
-
+""" 
+Potential functionality to add: Classfy more distinctly (e.g. by market data, context, analyst commentary, investment outlook / prediction)
+!!!Combine consecutive prompts or consecutive responses rather than dropping.!!!
+"""
 def classify():
 
     # cycle through /Raw
@@ -28,24 +47,37 @@ def classify():
 
                 promptPattern = "|".join(re.escape(x) for x in promptKeys)
                 responsePattern = "|".join(re.escape(x) for x in responseKeys)
+                discardPattern = "|".join(re.escape(x) for x in discardKeys)
 
-                promptCount = len(re.findall(promptPattern, chunk))
-                responseCount = len(re.findall(responsePattern, chunk))
+                # discard copyright / contact info
+                if (re.search(discardPattern, chunk, re.IGNORECASE) or re.search(r'[\w.-]+@[\w.-]+', chunk, re.IGNORECASE)):
+                    continue
 
-                # condition 1: prompt and response keywords
-                if (promptCount > 1 and responseCount > 1):
-                    print("Split the sentence")
+                promptCount = len(re.findall(promptPattern, chunk, re.IGNORECASE))
+                responseCount = len(re.findall(responsePattern, chunk, re.IGNORECASE))
+
+                # condition 1: prompt and response keywords, slit chunk or discard if they're both 0
+                if (promptCount == 0 and responseCount == 0):
+                    print("\n" + "DISCARD")
+                    print(chunk)
+
+                elif (promptCount == responseCount):
+                    print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    print(chunk)
 
                 # condition 2: response keywords
-                elif (promptCount > 1):
-                    print("You got a prompt")
+                elif (promptCount > responseCount):
+                    print( "\n" + "PROMPT, P: " + str(promptCount) + " R: " + str(responseCount))
+                    print(chunk)
 
                 # condition 3: prompt & response keywords
-                elif (responseCount > 1):
-                    print("You got a neither")
+                elif (responseCount > promptCount):
+                    print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    print(chunk)
 
-                else:
-                    print("You got neither")
+                # else:
+                #     print("You got neither")
+                    # print(chunk)
                 # sentences = re.split(r'(?<=[.!?])\s+', chunk)
 
 
