@@ -4,8 +4,6 @@ import re
 inputDirectory = Path("Raw")
 outputDirectory = Path("TrainingDirectry")
 
-# promptKeys = ["construction", "vacancy", "rent", "occupiers", "families"]
-# responseKeys = ["real estate", "investment activity" "leasing activity"]
 """ Property Value = NOI / CR ~ if cap rate falls an NOI remains same, property values increase.
     Good for current holders (can sell higher). Current buyers are betting on future growth.
 """
@@ -16,11 +14,10 @@ promptKeys =    ["market conditions", "inflation", "supply and demand", "vacancy
 responseKeys = ["real estate", "investment activity", "cap rates", "leasing activity", 
                 "leasing volume", "depreciate", "we expect", "will likely", "expected to", 
                 "fundamentals", "supply overhang", "will continue", "we remain", "is expected",
-                "should continue"
+                "should continue", "forcasts"
                 ]
 discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",
-                "waive all claims"
-
+                "waive all claims", "figure"
                 ]
 
 
@@ -79,11 +76,6 @@ def classify():
                 elif (responseCount > promptCount):
                     print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
                     print(chunk)
-
-                # else:
-                #     print("You got neither")
-                    # print(chunk)
-                # sentences = re.split(r'(?<=[.!?])\s+', chunk)
 
 
         # if match to prompt

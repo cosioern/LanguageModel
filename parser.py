@@ -54,8 +54,6 @@ def parser():
                         continue
                     paragraph = " ".join(block[4].splitlines())
                     paragraph = " ".join(paragraph.split())
-                    # if len(paragraph) < minCharCount:
-                    #     continue
                     cleaned.append(paragraph)
 
                 merged = []
