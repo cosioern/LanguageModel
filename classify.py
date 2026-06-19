@@ -18,7 +18,8 @@ responseKeys = ["real estate", "investment activity", "cap rates", "leasing acti
                 "fundamentals", "supply overhang", "will continue", "we remain", "is expected",
                 "should continue"
                 ]
-discardKeys =   ["copyright", "all rights reserved", "disclaimer"
+discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",
+                "waive all claims"
 
                 ]
 
@@ -51,6 +52,10 @@ def classify():
 
                 # discard copyright / contact info
                 if (re.search(discardPattern, chunk, re.IGNORECASE) or re.search(r'[\w.-]+@[\w.-]+', chunk, re.IGNORECASE)):
+                    continue
+
+                # discard section headers / chart data (noise)
+                if not (re.search(r'[.!?](\s|$)', chunk, re.IGNORECASE)):
                     continue
 
                 promptCount = len(re.findall(promptPattern, chunk, re.IGNORECASE))
