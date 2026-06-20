@@ -21,21 +21,20 @@ discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims al
                 "waive all claims", "figure"
                 ]
 
+# patterns to classify chunks of text
+promptPattern = "|".join(re.escape(x) for x in promptKeys)
+responsePattern = "|".join(re.escape(x) for x in responseKeys)
+discardPattern = "|".join(re.escape(x) for x in discardKeys)
 
 def main():
     classify()
-    format("MJ's catch phrase?", "HEEEEE HEEEEEE`!")
+    # format("MJ's catch phrase?", "HEEEEE HEEEEEE`!")
 
 """ 
 Potential functionality to add: Classfy more distinctly (e.g. by market data, context, analyst commentary, investment outlook / prediction)
 !!!Combine consecutive prompts or consecutive responses rather than dropping.!!!
 """
 def classify():
-
-    # patterns to classify chunks of text
-    promptPattern = "|".join(re.escape(x) for x in promptKeys)
-    responsePattern = "|".join(re.escape(x) for x in responseKeys)
-    discardPattern = "|".join(re.escape(x) for x in discardKeys)
 
     # cycle through /Raw
     for item in inputDirectory.iterdir():
@@ -109,12 +108,29 @@ def classify():
 
 """ 
 Take a chunk of text, split it (by units of sentence) into a prompt-response pair.
-Invariant: split must always return a prompt. 
-Not doing so will break classify() logic i.e. responseBuffer cannot be filled before promptBuffer
+Invariant:  Split must always return a prompt. 
+            Not doing so will break classify() logic i.e. responseBuffer cannot be filled before promptBuffer
+Heuristic:  1. Split into sentences. First goes to promptSplit. 
+            2. Add sentences to promptSplit until ...
+            3. A sentence with responseKeywords is found. Rest of sentences go to resonseSplit
 """
 def split(chunk):
 
-    # split chunk (using sentences as unit) into a pair
+    promptSplit = ""
+    responseSplit = ""
+
+    # split chunk into sentences, assign first to prompt
+    sentences = re.split(r'(?<=[.!?])\s+', chunk)
+
+    # begin from 2nd sentence
+    splitIndex = 1
+    for i, s in enumerate(sentences[1:], start=1):
+        if (re.search(responsePattern, s, re.IGNORECASE)):
+            splitIndex = i
+            break
+
+    promptSplit = " ".join(sentences[:splitIndex])
+    responseSplit = " ".join(sentences[splitIndex:])
 
     return promptSplit, responseSplit
 
@@ -132,6 +148,7 @@ def format(prompt, response):
         out.write('\n\n')
 
         out.write('{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}')
+        # out.write("Prompt:\n" + prompt + "\n" + "Response:\n" + response + "\n")
 
 if __name__ == "__main__":
     main()
