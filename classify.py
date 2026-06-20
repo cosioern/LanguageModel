@@ -27,6 +27,7 @@ responsePattern = "|".join(re.escape(x) for x in responseKeys)
 discardPattern = "|".join(re.escape(x) for x in discardKeys)
 
 def main():
+    clearOutput()
     classify()
     # format("MJ's catch phrase?", "HEEEEE HEEEEEE`!")
 
@@ -62,12 +63,12 @@ def classify():
 
                 # condition 1: discard since they're both 0
                 if (promptCount == 0 and responseCount == 0):
-                    # print("\n" + "DISCARD")
+                    print("\n" + "DISCARD")
                     print(chunk)
 
                 # condition 2: PROMPT
                 elif (promptCount > responseCount):
-                    # print( "\n" + "PROMPT, P: " + str(promptCount) + " R: " + str(responseCount))
+                    print( "\n" + "PROMPT, P: " + str(promptCount) + " R: " + str(responseCount))
                     
                     # trigger formatting and clear buffers
                     if responseBuffer:
@@ -81,7 +82,7 @@ def classify():
 
                 # condition 3: RESPONSE
                 elif (responseCount > promptCount):
-                    # print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
                     
                     # skip until prompt is found
                     if promptBuffer:
@@ -91,8 +92,8 @@ def classify():
 
                 # condition 4: SPLIT (promptCount == responseCount)
                 else: # (
-                    # print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
-                    
+                    print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    print(chunk)
                     # format and clear
                     if responseBuffer:
                         format(promptBuffer, responseBuffer)
@@ -100,12 +101,22 @@ def classify():
                         responseBuffer = ""
                     
                     # with / without prompt, without responseBuffer
-                    promptBuffer, responseBuffer = split(chunk)
+                    promptSplit, responseSplit = split(promptBuffer + " " + chunk)
+                    if promptSplit:
+                        # promptBuffer += " " + promptSplit
+                        promptBuffer = promptSplit
+                        # print("\nPrompt: " + promptBuffer)
+                    if responseSplit:
+                        # responseBuffer += " " + responseSplit
+                        responseBuffer = responseSplit
+                        # print("\nResponse: " + responseBuffer)
+                    # print(chunk)
 
-                    print(chunk)
+            # flush buffer before returning; "with open" closes file automatically
+            if (promptBuffer or responseBuffer):
+                format(promptBuffer, responseBuffer)
 
-        # close text file
-
+    
 """ 
 Take a chunk of text, split it (by units of sentence) into a prompt-response pair.
 Invariant:  Split must always return a prompt. 
@@ -120,10 +131,12 @@ def split(chunk):
     responseSplit = ""
 
     # split chunk into sentences, assign first to prompt
-    sentences = re.split(r'(?<=[.!?])\s+', chunk)
+    # sentences = re.split(r'(?<=[.!?])\s+', chunk)
+    sentences = re.split(r'(?<=[.?!])\s+(?=[A-Z])', chunk)
 
     # begin from 2nd sentence
-    splitIndex = 1
+    # splitIndex = 1
+    splitIndex = len(sentences)
     for i, s in enumerate(sentences[1:], start=1):
         if (re.search(responsePattern, s, re.IGNORECASE)):
             splitIndex = i
@@ -131,24 +144,30 @@ def split(chunk):
 
     promptSplit = " ".join(sentences[:splitIndex])
     responseSplit = " ".join(sentences[splitIndex:])
-
+    print("LOOK HERE: " + str(sentences) + "Split Index: " + str(splitIndex))
     return promptSplit, responseSplit
 
 """ 
 Format into the form: 
 {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}
-Into the file 
+
+Writes into the file train.jsonl
 """
 def format(prompt, response):
 
+    with open(outputDirectory / outFile, "a", encoding="UTF-8") as out:
+        # out.write('{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}')
+        out.write("Prompt:\n" + prompt + "\n" + "Response:\n" + response + "\n\n")
+
+"""
+Clear train.jsonl
+"""
+def clearOutput():
     with open(outputDirectory / outFile, "w", encoding="UTF-8") as out:
-        
         # write format example
         out.write('// {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}')
         out.write('\n\n')
-
-        out.write('{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}')
-        # out.write("Prompt:\n" + prompt + "\n" + "Response:\n" + response + "\n")
+        pass
 
 if __name__ == "__main__":
     main()
