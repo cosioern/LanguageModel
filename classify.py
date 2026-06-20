@@ -64,49 +64,59 @@ def classify():
                 # condition 1: discard since they're both 0
                 if (promptCount == 0 and responseCount == 0):
                     # print("\n" + "DISCARD")
-                    continue
                     print(chunk)
 
-                # condition 2: split chunk
-                elif (promptCount == responseCount):
-                    # print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
-                    print(chunk)
-
-                # condition 3: classify as prompt
+                # condition 2: PROMPT
                 elif (promptCount > responseCount):
                     # print( "\n" + "PROMPT, P: " + str(promptCount) + " R: " + str(responseCount))
                     
-                    if not responseBuffer: # add to promp
-                        promptBuffer += " " + chunk
-                    else:
-                        # trigger formatting
-                        # format(promptBuffer, responseBuffer)
-                        # clear promptBuffer and responseBuffer after writing
-                        continue
+                    # trigger formatting and clear buffers
+                    if responseBuffer:
+                        format(promptBuffer, responseBuffer)
+                        promptBuffer = ""
+                        responseBuffer = ""
+                    
+                    # add to promp
+                    promptBuffer += " " + chunk
                     print(chunk)
 
-                # condition 4: classify as response
+                # condition 3: RESPONSE
                 elif (responseCount > promptCount):
                     # print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    
                     # skip until prompt is found
-                    if not promptBuffer:
-                        continue
-                    # if there is prompt set conditional to RESPONSE
-                    else:
+                    if promptBuffer:
                         responseBuffer += " " + chunk
 
                     print(chunk)
 
+                # condition 4: SPLIT (promptCount == responseCount)
+                else: # (
+                    # print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    
+                    # format and clear
+                    if responseBuffer:
+                        format(promptBuffer, responseBuffer)
+                        promptBuffer = ""
+                        responseBuffer = ""
+                    
+                    # with / without prompt, without responseBuffer
+                    promptBuffer, responseBuffer = split(chunk)
 
-        # if match to prompt
-        # then write to prompt
-
-        # elif match to respnose
-        # then write to prompt
-
+                    print(chunk)
 
         # close text file
 
+""" 
+Take a chunk of text, split it (by units of sentence) into a prompt-response pair.
+Invariant: split must always return a prompt. 
+Not doing so will break classify() logic i.e. responseBuffer cannot be filled before promptBuffer
+"""
+def split(chunk):
+
+    # split chunk (using sentences as unit) into a pair
+
+    return promptSplit, responseSplit
 
 """ 
 Format into the form: 
