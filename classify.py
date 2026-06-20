@@ -2,7 +2,8 @@ from pathlib import Path
 import re
 
 inputDirectory = Path("Raw")
-outputDirectory = Path("TrainingDirectry")
+outputDirectory = Path("TrainingSet")
+outFile = "train.jsonl"
 
 """ Property Value = NOI / CR ~ if cap rate falls an NOI remains same, property values increase.
     Good for current holders (can sell higher). Current buyers are betting on future growth.
@@ -23,6 +24,7 @@ discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims al
 
 def main():
     classify()
+    format("MJ's catch phrase?", "HEEEEE HEEEEEE`!")
 
 """ 
 Potential functionality to add: Classfy more distinctly (e.g. by market data, context, analyst commentary, investment outlook / prediction)
@@ -30,10 +32,17 @@ Potential functionality to add: Classfy more distinctly (e.g. by market data, co
 """
 def classify():
 
+    # patterns to classify chunks of text
+    promptPattern = "|".join(re.escape(x) for x in promptKeys)
+    responsePattern = "|".join(re.escape(x) for x in responseKeys)
+    discardPattern = "|".join(re.escape(x) for x in discardKeys)
+
     # cycle through /Raw
     for item in inputDirectory.iterdir():
         if not item.is_file() or item.stat().st_size == 0:
             continue
+        promptBuffer = ""
+        responseBuffer = ""
 
         # open text file (only match prompt-response by file) and open text file (to write out formatted jsonl)
         with open(item, "r", encoding="UTF-8") as raw: # and with open("outputDirectoy / outFile, "w", encoding="utf-8") as out:
@@ -43,38 +52,49 @@ def classify():
             # if classification is same as before (i.e. two prompts in a row) drop chunk
             for chunk in chunks:
 
-                promptPattern = "|".join(re.escape(x) for x in promptKeys)
-                responsePattern = "|".join(re.escape(x) for x in responseKeys)
-                discardPattern = "|".join(re.escape(x) for x in discardKeys)
-
-                # discard copyright / contact info
-                if (re.search(discardPattern, chunk, re.IGNORECASE) or re.search(r'[\w.-]+@[\w.-]+', chunk, re.IGNORECASE)):
-                    continue
-
-                # discard section headers / chart data (noise)
-                if not (re.search(r'[.!?](\s|$)', chunk, re.IGNORECASE)):
+                # discard copyright / contact info / section headers / chart data (noise)
+                if (re.search(discardPattern, chunk, re.IGNORECASE)
+                or re.search(r'[\w.-]+@[\w.-]+', chunk, re.IGNORECASE)
+                or not (re.search(r'[.!?](\s|$)', chunk, re.IGNORECASE))):
                     continue
 
                 promptCount = len(re.findall(promptPattern, chunk, re.IGNORECASE))
                 responseCount = len(re.findall(responsePattern, chunk, re.IGNORECASE))
 
-                # condition 1: prompt and response keywords, slit chunk or discard if they're both 0
+                # condition 1: discard since they're both 0
                 if (promptCount == 0 and responseCount == 0):
-                    print("\n" + "DISCARD")
+                    # print("\n" + "DISCARD")
+                    continue
                     print(chunk)
 
+                # condition 2: split chunk
                 elif (promptCount == responseCount):
-                    print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    # print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
                     print(chunk)
 
-                # condition 2: response keywords
+                # condition 3: classify as prompt
                 elif (promptCount > responseCount):
-                    print( "\n" + "PROMPT, P: " + str(promptCount) + " R: " + str(responseCount))
+                    # print( "\n" + "PROMPT, P: " + str(promptCount) + " R: " + str(responseCount))
+                    
+                    if not responseBuffer: # add to promp
+                        promptBuffer += " " + chunk
+                    else:
+                        # trigger formatting
+                        # format(promptBuffer, responseBuffer)
+                        # clear promptBuffer and responseBuffer after writing
+                        continue
                     print(chunk)
 
-                # condition 3: prompt & response keywords
+                # condition 4: classify as response
                 elif (responseCount > promptCount):
-                    print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    # print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
+                    # skip until prompt is found
+                    if not promptBuffer:
+                        continue
+                    # if there is prompt set conditional to RESPONSE
+                    else:
+                        responseBuffer += " " + chunk
+
                     print(chunk)
 
 
@@ -91,8 +111,17 @@ def classify():
 """ 
 Format into the form: 
 {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}
+Into the file 
 """
-# def format(prompt, response):
+def format(prompt, response):
+
+    with open(outputDirectory / outFile, "w", encoding="UTF-8") as out:
+        
+        # write format example
+        out.write('// {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}')
+        out.write('\n\n')
+
+        out.write('{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}')
 
 if __name__ == "__main__":
     main()
