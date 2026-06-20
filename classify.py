@@ -29,11 +29,9 @@ discardPattern = "|".join(re.escape(x) for x in discardKeys)
 def main():
     clearOutput()
     classify()
-    # format("MJ's catch phrase?", "HEEEEE HEEEEEE`!")
 
 """ 
 Potential functionality to add: Classfy more distinctly (e.g. by market data, context, analyst commentary, investment outlook / prediction)
-!!!Combine consecutive prompts or consecutive responses rather than dropping.!!!
 """
 def classify():
 
@@ -44,8 +42,7 @@ def classify():
         promptBuffer = ""
         responseBuffer = ""
 
-        # open text file (only match prompt-response by file) and open text file (to write out formatted jsonl)
-        with open(item, "r", encoding="UTF-8") as raw: # and with open("outputDirectoy / outFile, "w", encoding="utf-8") as out:
+        with open(item, "r", encoding="UTF-8") as raw:
             # split chunks of text into an array by \n, ignoring whitespace
             chunks = [c for c in re.split(r'\n{1,3}', raw.read()) if c.strip()]
 
@@ -61,15 +58,12 @@ def classify():
                 promptCount = len(re.findall(promptPattern, chunk, re.IGNORECASE))
                 responseCount = len(re.findall(responsePattern, chunk, re.IGNORECASE))
 
-                # condition 1: discard since they're both 0
+                # condition 1: discard
                 if (promptCount == 0 and responseCount == 0):
-                    print("\n" + "DISCARD")
-                    print(chunk)
+                    continue
 
                 # condition 2: PROMPT
                 elif (promptCount > responseCount):
-                    print( "\n" + "PROMPT, P: " + str(promptCount) + " R: " + str(responseCount))
-                    
                     # trigger formatting and clear buffers
                     if responseBuffer:
                         format(promptBuffer, responseBuffer)
@@ -78,22 +72,15 @@ def classify():
                     
                     # add to promp
                     promptBuffer += " " + chunk
-                    print(chunk)
 
                 # condition 3: RESPONSE
-                elif (responseCount > promptCount):
-                    print( "\n" + "RESPONSE, P: " + str(promptCount) + " R: " + str(responseCount))
-                    
+                elif (responseCount > promptCount):                    
                     # skip until prompt is found
                     if promptBuffer:
                         responseBuffer += " " + chunk
 
-                    print(chunk)
-
                 # condition 4: SPLIT (promptCount == responseCount)
                 else: # (
-                    print( "\n" + "SPLIT SENTENCE, P: " + str(promptCount) + " R: " + str(responseCount))
-                    print(chunk)
                     # format and clear
                     if responseBuffer:
                         format(promptBuffer, responseBuffer)
@@ -103,14 +90,10 @@ def classify():
                     # with / without prompt, without responseBuffer
                     promptSplit, responseSplit = split(promptBuffer + " " + chunk)
                     if promptSplit:
-                        # promptBuffer += " " + promptSplit
                         promptBuffer = promptSplit
-                        # print("\nPrompt: " + promptBuffer)
+
                     if responseSplit:
-                        # responseBuffer += " " + responseSplit
                         responseBuffer = responseSplit
-                        # print("\nResponse: " + responseBuffer)
-                    # print(chunk)
 
             # flush buffer before returning; "with open" closes file automatically
             if (promptBuffer or responseBuffer):
@@ -134,8 +117,8 @@ def split(chunk):
     # sentences = re.split(r'(?<=[.!?])\s+', chunk)
     sentences = re.split(r'(?<=[.?!])\s+(?=[A-Z])', chunk)
 
-    # begin from 2nd sentence
-    # splitIndex = 1
+    # first sentence will be withheld to ensure a prompt (can't have a response w/out prompt)
+    # in the case that no responseKeys are found, entire chunk remains prompt
     splitIndex = len(sentences)
     for i, s in enumerate(sentences[1:], start=1):
         if (re.search(responsePattern, s, re.IGNORECASE)):
@@ -144,7 +127,7 @@ def split(chunk):
 
     promptSplit = " ".join(sentences[:splitIndex])
     responseSplit = " ".join(sentences[splitIndex:])
-    print("LOOK HERE: " + str(sentences) + "Split Index: " + str(splitIndex))
+
     return promptSplit, responseSplit
 
 """ 
@@ -156,8 +139,8 @@ Writes into the file train.jsonl
 def format(prompt, response):
 
     with open(outputDirectory / outFile, "a", encoding="UTF-8") as out:
-        # out.write('{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}')
-        out.write("Prompt:\n" + prompt + "\n" + "Response:\n" + response + "\n\n")
+        out.write('\n{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}')
+        # out.write("Prompt:\n" + prompt + "\n" + "Response:\n" + response + "\n\n")
 
 """
 Clear train.jsonl
@@ -165,8 +148,7 @@ Clear train.jsonl
 def clearOutput():
     with open(outputDirectory / outFile, "w", encoding="UTF-8") as out:
         # write format example
-        out.write('// {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}')
-        out.write('\n\n')
+        out.write('// {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}\n')
         pass
 
 if __name__ == "__main__":
