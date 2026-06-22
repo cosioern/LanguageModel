@@ -36,7 +36,9 @@ def parser():
 
     x = 1
     for item in inDir.iterdir():
-        if not item.is_file() or item.stat().st_size == 0:
+
+        # skip directories, empty files, and hiddne files (like .DS_Store)
+        if not item.is_file() or item.stat().st_size == 0 or item.name.startswith("."):
             continue
 
         doc = pymupdf.open(item)

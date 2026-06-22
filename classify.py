@@ -18,7 +18,7 @@ responseKeys = ["real estate", "investment activity", "cap rates", "leasing acti
                 "should continue", "forcasts"
                 ]
 discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",
-                "waive all claims", "figure"
+                "waive all claims", "figure", #"©", "trademarks", "Intelligent Investment"
                 ]
 
 # patterns to classify chunks of text
@@ -37,8 +37,11 @@ def classify():
 
     # cycle through /Raw
     for item in inputDirectory.iterdir():
-        if not item.is_file() or item.stat().st_size == 0:
+
+        # skip directories, empty files, and hidden files
+        if not item.is_file() or item.stat().st_size == 0 or item.name.startswith("."):
             continue
+        
         promptBuffer = ""
         responseBuffer = ""
 
