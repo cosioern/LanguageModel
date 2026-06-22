@@ -18,7 +18,7 @@ responseKeys = ["real estate", "investment activity", "cap rates", "leasing acti
                 "should continue", "forcasts"
                 ]
 discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",
-                "waive all claims", "figure", #"©", "trademarks", "Intelligent Investment"
+                "waive all claims", "figure", "©", "trademarks", "Intelligent Investment"
                 ]
 
 # patterns to classify chunks of text
@@ -52,11 +52,15 @@ def classify():
             # if classification is same as before (i.e. two prompts in a row) drop chunk
             for chunk in chunks:
 
-                # discard copyright / contact info / section headers / chart data (noise)
-                if (re.search(discardPattern, chunk, re.IGNORECASE)
-                or re.search(r'[\w.-]+@[\w.-]+', chunk, re.IGNORECASE)
+                # section headers / chart data (noise)
+                if (re.search(r'[\w.-]+@[\w.-]+', chunk, re.IGNORECASE)
                 or not (re.search(r'[.!?](\s|$)', chunk, re.IGNORECASE))):
                     continue
+
+                # remove sentences with discardKeys
+                sentences = re.split(r'(?<=[.?!])\s+', chunk)
+                sentences = [s for s in sentences if not re.search(discardPattern, s, re.IGNORECASE)]
+                chunk = " ".join(sentences)
 
                 promptCount = len(re.findall(promptPattern, chunk, re.IGNORECASE))
                 responseCount = len(re.findall(responsePattern, chunk, re.IGNORECASE))
