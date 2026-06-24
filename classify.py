@@ -10,7 +10,7 @@ outFile = "train.jsonl"
 """
 # better to have fewer, more specifically relevant keywords + lower count barrier
 promptKeys =    ["market conditions", "inflation", "supply and demand", "vacancy", "net absorption", 
-                "market share"
+                "market share", "net absorption", "consecutive quarters"
                 ]
 responseKeys = ["real estate", "investment activity", "cap rates", "leasing activity", 
                 "leasing volume", "depreciate", "we expect", "will likely", "expected to", 
@@ -18,7 +18,8 @@ responseKeys = ["real estate", "investment activity", "cap rates", "leasing acti
                 "should continue", "forcasts"
                 ]
 discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",
-                "waive all claims", "figure", "©", "trademarks", "Intelligent Investment"
+                "waive all claims", "figure", "©", "trademarks", "Intelligent Investment",
+                "Fannie Mae", "Multifamily Market Commentary"
                 ]
 
 # patterns to classify chunks of text
