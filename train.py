@@ -22,8 +22,8 @@ model = AutoModelForCausalLM.from_pretrained(
 
 # Congifure LoRA, LoraConfig -> tells peft what adapters to change
 peft_config = LoraConfig(
-    r=32,                   # LoRA Rank, 8-16 typical
-    lora_alpha=16,          # LoRA scaling factor, r * 2 so 32->64 or 16->32 for pairing consistenct
+    r=16,                   # LoRA Rank, 8-16 typical
+    lora_alpha=32,          # LoRA scaling factor, r * 2 so 32->64 or 16->32 for pairing consistenct
     lora_dropout=0.05,      # Dropout Probability
     bias="none",            # Bias Training Strategy
     task_type="CAUSAL_LM",  # Task type
@@ -35,12 +35,12 @@ peft_config = LoraConfig(
 training_args = SFTConfig(
     packing=True,               # pack examples to improve training efficiency
     assistant_only_loss=True,   # for conversational dataset
+    
+    num_train_epochs=3,
     learning_rate=2.0e-4,
-    max_seq_length=2048         # 
-    # batch size
-    # learning rate
-    # epochs
-
+    max_seq_length=1024,
+    per_device_train_batch_size=1,
+    gradient_checkpointing=True,
 )
 
 # SFTTrainer -> runs supervised fine-tuning
