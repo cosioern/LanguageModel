@@ -21,17 +21,26 @@ promptKeys =    ["market conditions", "inflation", "supply and demand", "vacancy
                 "annual rate of", "rental units permitted", "began to recover", "increased through", "cost burden",
                 "recovery", "job growth", "job gains", "job losses", "job losses", r"from\s+\d{4}\s+through", 
                 "continued to", "have expanded", "during the past", "prices averaged", "each year since",
+                "net household growth", "submarket", "currently comprise", 
                 ]
 responseKeys = ["real estate", "investment activity", "cap rates", "leasing activity", 
                 "leasing volume", "depreciate", "we expect", "will likely", "expected to", 
                 "fundamentals", "supply overhang", "will continue", "we remain", "is expected",
                 "should continue", "forcasts", "is estimated for", "will meet",
                 "under construction will", "forecast period", "are expected", "will increase",
-                "will decrease", "is anticipated", "anticipated to",
+                "will decrease", "is anticipated", "anticipated to", "fastest rate of groath",
+
                 ]
 discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",
                 "waive all claims", "figure", "©", "trademarks", "Intelligent Investment",
-                "Fannie Mae", "Multifamily Market Commentary", "Table of contents"
+                "Fannie Mae", "Multifamily Market Commentary", "Table of contents",
+                "C h i c a g o - N a p e r v i l l e ", 
+                "C O M P R E H E N S I V E H O U S I N G M A R K E T A N A L Y S I S",
+                "COMPREHENSIVE HOUSING MARKET ANALYSIS",
+                "M a d i s o n , W I ",
+                "M i l w a u k e e - Wa u k e s h a -",
+                "Department of Housing and Urban Development",
+                "Multifamily Economic"
                 ]
 
 # patterns to classify chunks of text
@@ -168,7 +177,7 @@ Clear train.jsonl
 def clearOutput():
     with open(outputDirectory / outFile, "w", encoding="UTF-8") as out:
         # write format example
-        out.write('// {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}\n')
+        # out.write('// {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}\n')
         pass
 
 if __name__ == "__main__":
