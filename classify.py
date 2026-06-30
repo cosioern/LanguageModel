@@ -3,23 +3,35 @@ import re
 
 inputDirectory = Path("Raw")
 outputDirectory = Path("TrainingSet")
-outFile = "train.jsonl"
+outFile = "dataset.jsonl"
 
 """ Property Value = NOI / CR ~ if cap rate falls an NOI remains same, property values increase.
     Good for current holders (can sell higher). Current buyers are betting on future growth.
 """
 # better to have fewer, more specifically relevant keywords + lower count barrier
 promptKeys =    ["market conditions", "inflation", "supply and demand", "vacancy", "net absorption", 
-                "market share", "net absorption", "consecutive quarters"
+                "market share", "net absorption", "consecutive quarters", "gross domestic product",
+                "GDP", "payroll expansion", "economic impact", "unemployment rate", "home sales",
+                "median sales price", "year-over-year", "population growth", "declined to",
+                "slowed", "net in-migration", "net out-migration", "natural change", "increased to", 
+                "accounted for", "delinquent mortgages", "real estate owned", "REO", "peaked at", 
+                "on record since", "According to", "in the past", "ranging from", "during that period",
+                "at a peak of", "increased an average of", "in the years that followed", "during the next",
+                "HOI", "declined from", "increased from", "historical average", "during the housing crisis",
+                "annual rate of", "rental units permitted", "began to recover", "increased through", "cost burden",
+                "recovery", "job growth", "job gains", "job losses", "job losses", r"from\s+\d{4}\s+through", 
+                "continued to", "have expanded", "during the past", "prices averaged", "each year since",
                 ]
 responseKeys = ["real estate", "investment activity", "cap rates", "leasing activity", 
                 "leasing volume", "depreciate", "we expect", "will likely", "expected to", 
                 "fundamentals", "supply overhang", "will continue", "we remain", "is expected",
-                "should continue", "forcasts"
+                "should continue", "forcasts", "is estimated for", "will meet",
+                "under construction will", "forecast period", "are expected", "will increase",
+                "will decrease", "is anticipated", "anticipated to",
                 ]
 discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",
                 "waive all claims", "figure", "©", "trademarks", "Intelligent Investment",
-                "Fannie Mae", "Multifamily Market Commentary"
+                "Fannie Mae", "Multifamily Market Commentary", "Table of contents"
                 ]
 
 # patterns to classify chunks of text

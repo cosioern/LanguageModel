@@ -27,7 +27,7 @@ peft_config = LoraConfig(
     lora_dropout=0.05,      # Dropout Probability
     bias="none",            # Bias Training Strategy
     task_type="CAUSAL_LM",  # Task type
-    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"], # Modules to apply LoRA
+    target_modules=["q_proj", "v_proj"],#, "k_proj", "o_proj"], # Modules to apply LoRA
     modules_to_save=None,   # Additinoal Modules to train
 )
 
