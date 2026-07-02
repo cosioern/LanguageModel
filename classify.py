@@ -28,7 +28,7 @@ responseKeys = ["real estate", "investment activity", "cap rates", "leasing acti
                 "fundamentals", "supply overhang", "will continue", "we remain", "is expected",
                 "should continue", "forcasts", "is estimated for", "will meet",
                 "under construction will", "forecast period", "are expected", "will increase",
-                "will decrease", "is anticipated", "anticipated to", "fastest rate of groath",
+                "will decrease", "is anticipated", "anticipated to", "fastest rate of growth",
 
                 ]
 discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims all liability",

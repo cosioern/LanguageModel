@@ -5,7 +5,7 @@ main:
 	$(PYTHON) classify.py
 
 infer:
-	$(PYTHON) inference.py
+	$(PYTHON) evaluate.py
 
 train:
 	$(PYTHON) train.py
