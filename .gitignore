@@ -1,14 +1,21 @@
 # Operating System Files
 .DS_Store
 
-
 # Ide Settings
 .vscode/
 
-# Technical Readings
+# Misc
 /TechnicalReadings
 /Raw
 /TrainingSet
 /Reports
 /Adapters
 /__pycache__
+/Checkpoints
+
+# Output Files
+Set_0
+Set_1
+Set_2
+Set_3
+filter.py
