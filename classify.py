@@ -163,16 +163,16 @@ def split(chunk):
 Format into the form: 
 {"messages":[{"role":"user","content":"Prompt"},{"role":"assistant","content":"Response"}]}
 
-Writes into the file train.jsonl
+Writes into the file dataset.jsonl
 """
 def format(prompt, response):
 
     with open(outputDirectory / outFile, "a", encoding="UTF-8") as out:
-        out.write('\n{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}')
+        out.write('{"messages":[{"role":"user","content":"' + prompt + '"},{"role":"assistant","content":"' + response + '"}]}\n')
         # out.write("Prompt:\n" + prompt + "\n" + "Response:\n" + response + "\n\n")
 
 """
-Clear train.jsonl
+Clear dataset.jsonl
 """
 def clearOutput():
     with open(outputDirectory / outFile, "w", encoding="UTF-8") as out:

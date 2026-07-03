@@ -3,6 +3,7 @@ PYTHON = python
 main:
 	$(PYTHON) parser.py
 	$(PYTHON) classify.py
+	$(PYTHON) filter.py
 
 infer:
 	$(PYTHON) evaluate.py
