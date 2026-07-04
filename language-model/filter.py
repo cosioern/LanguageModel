@@ -5,9 +5,6 @@ bad = []
 good = []
 removed_axis_junk = []
 scrub = [
-    r"Real Estate Market Outlook",
-    r"Chapter\s*\d+",
-    r"UNITED STATES OUTLOOK \d{4}",
     "3 NOTE FROM OUR CHIEF ECONOMIST A Year of Extraordinary Challenges",
     "C R E O U T L O O K 2 0 2 5 Resilience & Recovery:",
     "U.S. National Retail Forecast",
@@ -17,12 +14,7 @@ scrub = [
     "CBRE RESEARCH U.S.",
     # r"Table\s\d",
     "Trends to Watch",
-    r"Outlook\s\d{2}",
     # "Source:",
-    r"\d+\sof\s\d+",
-    r"(?:Q[1-4]\s\d{4}\s*){4,}",
-    r"(?:[EF]?\s*Q[1-4]\s\d{4}\s*){4,}[EF]?,?",
-    r"Table\s*\d+.*?(Source:|Note:)",
     "CBRE RESEARCH UNITED STATES",
     "Costar",
     "Cushman & Wakefield Research",
@@ -33,13 +25,32 @@ scrub = [
 ]
 
 axis_junk_re = re.compile(
-    r"(?:[\(\$]?-?\d{1,4}(?:\.\d+)?[FfEeAa]?%?\)?[\s,]*){6,}"
+    "|".join([
+    r"Real Estate Market Outlook",
+    r"Chapter\s*\d+",
+    r"UNITED STATES OUTLOOK \d{4}",
+    r"(?:[\(\$]?-?\d{1,4}(?:\.\d+)?[FfEeAa]?%?\)?[\s,]*){6,}",
+    r"Outlook\s\d{2}",
+    r"\d+\sof\s\d+",
+    r"(?:Q[1-4]\s\d{4}\s*){4,}",
+    r"(?:[EF]?\s*Q[1-4]\s\d{4}\s*){4,}[EF]?,?",
+    r"Table\s*\d+.*?(Source:|Note:)",
+    ]),
+    re.IGNORECASE
 )
 
-scrub_re = re.compile("|".join(scrub), re.IGNORECASE)
+# scrub_re = re.compile("|".join(scrub), re.IGNORECASE)
+scrub_re = re.compile("|".join(map(re.escape, scrub)), re.IGNORECASE)
 
 # remove noisy phrases
 def scrub_content(text):
+    text = text.replace("\u00a0", " ")
+    text = re.sub(r"\s+", " ", text)
+
+    cleaned = scrub_re.sub("", text)
+    cleaned = axis_junk_re.sub("", cleaned)
+
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip()
     cleaned = scrub_re.sub("", text)
 
     for m in axis_junk_re.finditer(cleaned):
