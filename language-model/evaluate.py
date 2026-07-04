@@ -49,19 +49,6 @@ eval_prompts = [
      
 ]
 
-prompt = ("You are advising a real estate investment firm evaluating a diversified portfolio across residential "
-    "and multifamily assets. Assume a regional banking crisis has tightened credit availability for commercial "
-    "real estate lending, cap rates have expanded by 75–100 basis points in secondary markets, and national "
-    "multifamily rent growth has plateaued. The portfolio includes urban core luxury apartments with high occupancy "
-    "and high debt leverage, suburban workforce housing with moderate growth and stable occupancy, and newly built "
-    "Class A developments in tertiary markets that are in the lease-up phase and exposed to refinancing risk. Write an "
-    "investment risk and positioning memo that assesses how each asset class is affected under current conditions, "
-    "identifies liquidity and refinancing risks across the portfolio, recommends whether to hold, divest, refinance, "
-    "or reposition each segment, explains how tighter credit changes expected returns and exit timing assumptions, and "
-    "concludes with a concise investment stance summarized in 3–5 bullet points. Use an institutional, precise, and "
-    "explicitly analytical tone rather than generic financial advice."
-    )
-
 system_prompt = (
         "You are PIE, a real estate market analyst. "
         "Provide concise, investment-focused commentary. "

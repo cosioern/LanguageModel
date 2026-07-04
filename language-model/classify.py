@@ -38,9 +38,12 @@ discardKeys =   ["copyright", "all rights reserved", "disclaimer", "disclaims al
                 "C O M P R E H E N S I V E H O U S I N G M A R K E T A N A L Y S I S",
                 "COMPREHENSIVE HOUSING MARKET ANALYSIS",
                 "M a d i s o n , W I ",
-                "M i l w a u k e e - Wa u k e s h a -",
+                "M i l w a u k e e - Wa u k e s h a ",
                 "Department of Housing and Urban Development",
-                "Multifamily Economic"
+                # "Multifamily Economic",
+                # "please contact",
+                # "Economic Forecast Table",
+                # "Source",
                 ]
 
 # patterns to classify chunks of text
