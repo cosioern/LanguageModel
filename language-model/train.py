@@ -42,25 +42,25 @@ data_set = load_dataset("json", data_files="TrainingSet/dataset.jsonl", split="t
 # )
 configurations = [
     # default config
-    SFTConfig(
-        learning_rate=2.0e-4,
-        num_train_epochs=3,
-        packing=True,               # pack examples to improve training efficiency
-        assistant_only_loss=True,   # for conversational dataset
-        max_length=1024,
-        per_device_train_batch_size=1,
-        gradient_checkpointing=False,
-        seed=42,
-        gradient_accumulation_steps=4,
-        logging_steps=10,
-        warmup_ratio=0.03,
-        bf16=False,
-        fp16=False,
-        max_grad_norm=0.0,   # IMPORTANT: disables scaling path issues !!
-        save_strategy="steps",
-        save_steps=50,
-        save_total_limit=2,
-    ),
+    # SFTConfig(
+    #     learning_rate=2.0e-4,
+    #     num_train_epochs=3,
+    #     packing=True,               # pack examples to improve training efficiency
+    #     assistant_only_loss=True,   # for conversational dataset
+    #     max_length=1024,
+    #     per_device_train_batch_size=1,
+    #     gradient_checkpointing=False,
+    #     seed=42,
+    #     gradient_accumulation_steps=4,
+    #     logging_steps=10,
+    #     warmup_ratio=0.03,
+    #     bf16=False,
+    #     fp16=False,
+    #     max_grad_norm=0.0,   # IMPORTANT: disables scaling path issues !!
+    #     save_strategy="steps",
+    #     save_steps=50,
+    #     save_total_limit=2,
+    # ),
     # lower learning rate
     SFTConfig(
         learning_rate=1.0e-4,
@@ -82,26 +82,26 @@ configurations = [
         save_total_limit=2,
     ),
     # more training
-    SFTConfig(
-        learning_rate=2.0e-4,
-        num_train_epochs=5,
-        packing=True,
-        assistant_only_loss=True,
-        max_length=1024,
-        per_device_train_batch_size=1,
-        gradient_checkpointing=False,
-        seed=42,
-        gradient_accumulation_steps=4,
-        logging_steps=10,
-        warmup_ratio=0.03,
-        bf16=False,
-        fp16=False,
-        max_grad_norm=0.0,   # IMPORTANT: disables scaling path issues
-        save_strategy="steps",        
-        save_steps=50,
-        save_total_limit=2,
+    # SFTConfig(
+    #     learning_rate=2.0e-4,
+    #     num_train_epochs=5,
+    #     packing=True,
+    #     assistant_only_loss=True,
+    #     max_length=1024,
+    #     per_device_train_batch_size=1,
+    #     gradient_checkpointing=False,
+    #     seed=42,
+    #     gradient_accumulation_steps=4,
+    #     logging_steps=10,
+    #     warmup_ratio=0.03,
+    #     bf16=False,
+    #     fp16=False,
+    #     max_grad_norm=0.0,   # IMPORTANT: disables scaling path issues
+    #     save_strategy="steps",        
+    #     save_steps=50,
+    #     save_total_limit=2,
 
-    ),
+    # ),
     # larger effective batch
     SFTConfig(
         learning_rate=2.0e-4,
@@ -121,7 +121,6 @@ configurations = [
         save_strategy="steps",
         save_steps=50,
         save_total_limit=2,
-
     ),
 ]
 
@@ -132,7 +131,7 @@ configurations = [
 # training loop
 for i, training_set in enumerate(configurations):
 
-    output_dir = f"Checkpoints/config_{i}"
+    output_dir = f"Checkpoints2/config_{i}"
 
     # Load Model with Quantization
     model = AutoModelForCausalLM.from_pretrained(
@@ -159,4 +158,4 @@ for i, training_set in enumerate(configurations):
     else:
         trainer.train()
 
-    trainer.save_model(f"Adapters/Set_{i}")
+    trainer.save_model(f"Adapters2/Set_{i}")
