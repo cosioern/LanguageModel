@@ -24,6 +24,10 @@ properties for investment purposes.
 
  ### Current Training Dataset Size: 2.3 million characters
 
+## Repo Structure
+### /Backend         holds server
+### /language-model  holds LM microservice and all scripts for constructing dataset and fine-tunining
+
 ## Production Phases:
 
 ### 1. Data Parsing
