@@ -107,7 +107,7 @@ configurations = [
         learning_rate=2.0e-4,
         num_train_epochs=3,
         gradient_accumulation_steps=8,
-        packing=True,
+        packing=False,
         assistant_only_loss=True,
         max_length=1024,
         per_device_train_batch_size=1,
@@ -130,8 +130,7 @@ configurations = [
 
 # training loop
 for i, training_set in enumerate(configurations):
-
-    output_dir = f"Checkpoints2/config_{i}"
+    output_dir  = f"Checkpoints2/config_{i}"
 
     # Load Model with Quantization
     model = AutoModelForCausalLM.from_pretrained(
@@ -150,12 +149,12 @@ for i, training_set in enumerate(configurations):
     args=training_set,
     )
 
-    trainer.args.output_dir = output_dir
-    checkpoints = sorted(Path(output_dir).glob("checkpoint-*"))
+trainer.args.output_dir = output_dir
+# checkpoints = sorted(Path(output_dir).glob("checkpoint-*"))
 
-    if checkpoints:
-        trainer.train(resume_from_checkpoint=str(checkpoints[-1]))
-    else:
-        trainer.train()
+# if checkpoints:
+#     trainer.train(resume_from_checkpoint=str(checkpoints[-1]))
+# else:
+trainer.train()
 
-    trainer.save_model(f"Adapters2/Set_{i}")
+trainer.save_model(f"Adapters2/Set_{i}")

@@ -1,6 +1,15 @@
 * {
   font-family: Arial, sans-serif;
 }
+.user {
+  text-align: right;
+  margin: 6px 0;
+}
+
+.assistant {
+  text-align: left;
+  margin: 6px 0;
+}
 
 .container {
   width: 400px;

@@ -2,18 +2,29 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  const [msg, setMsg] = useState("");
+const [messages, setMessages] = useState([]);
   const [prompt, setPrompt] = useState("");
 
   function sendPrompt() {
-    if (!prompt.trim()) return;
+  if (!prompt.trim()) return;
 
-    fetch(`http://localhost:8080/llm/generate?prompt=${encodeURIComponent(prompt)}`)
+  const userMessage = prompt;
+  setPrompt("");
+
+  setMessages(prev => [
+    ...prev,
+    { role: "user", text: userMessage }
+  ]);
+
+  fetch(`http://localhost:8080/llm/generate?prompt=${encodeURIComponent(userMessage)}`)
     .then(res => res.text())
-    .then(data => setMsg(data))
-
-    setPrompt("");
-  }
+    .then(data => {
+      setMessages(prev => [
+        ...prev,
+        { role: "assistant", text: data }
+      ]);
+    });
+}
 
   function handleKeyDown(e) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -25,9 +36,22 @@ function App() {
   return (
     <div className="container">
       {/* OUTPUT */}
-      <div className="output">
-        {msg}
-      </div>
+    <div className="output">
+  {messages.map((m, i) => (
+    <div
+      key={i}
+      style={{
+        margin: "8px 0",
+        padding: "8px",
+        borderRadius: "8px",
+        background: m.role === "user" ? "#dbeafe" : "#e5e7eb",
+        textAlign: m.role === "user" ? "right" : "left"
+      }}
+    >
+      {m.role}: {m.text}
+    </div>
+  ))}
+</div>
 
       {/* INPUT */}
       <textarea

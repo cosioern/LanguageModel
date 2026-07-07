@@ -9,9 +9,9 @@
 /language-model/Raw
 /language-model/TrainingSet
 /language-model/Reports
-/language-model/Adapters
 /language-model/__pycache__
 /language-model/Checkpoints
+/language-model/Checkpoints2
 
 # Output Files
 /language-model/Set_0
@@ -21,3 +21,4 @@
 /language-model/pullExamples.py
 /language-model/Examples
 /language-model/eval-prompts.txt
+/language-model/

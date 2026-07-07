@@ -70,6 +70,7 @@ I recommend setting up a Conda environment like so:
  - On Windows / MacOS: conda create -n "Env Name" python=3.11
  - pip install pymupdf transformers datasets pef trl accelerate bitsandbytes
  - pip install torch --index-url https://download.pytorch.org/whl/cu121
+ - pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu128
  - pip install fastapi
  - pip install uvicorn
  - This python version is the newest that will most reliably work with the necessary dependencies.
