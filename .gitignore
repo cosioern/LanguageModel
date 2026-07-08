@@ -1,6 +1,6 @@
 # Operating System Files
 /language-model/.DS_Store
-
+.DS_Store
 # Ide Settings
 .vscode/
 

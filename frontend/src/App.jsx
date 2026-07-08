@@ -63,28 +63,52 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <div className="output">
-        {messages.map((m, i) => (
-          <div key={i} className={`message ${m.role}`}>
-            {m.text}
-          </div>
-        ))}
-        <div id="bottom" ref={bottomRef} style={{ height: "100px" }} />
+
+    <div className="page">
+
+      {/* Left-side content. */}
+      <div className="sideLeft">
+        <h3>Powered by Bernie</h3>
+        <button className="profile" title="Profile">
+          <img src="../public/profile.png" alt="Profile" />
+        </button>
       </div>
 
-      <textarea
-        ref={textareaRef}
-        className="input"
-        value={prompt}
-        onChange={(e) => {
-          setPrompt(e.target.value);
-          resizeTextarea(e.target);
-        }}
-        onKeyDown={handleKeyDown}
-        placeholder="Ask anything..."
-        rows={1}
-      />
+      {/* Middle-page main content. */}
+      <div className="container">
+        <div className="output">
+          {messages.map((m, i) => (
+            <div key={i} className={`message ${m.role}`}>
+              {m.text}
+            </div>
+          ))}
+          <div id="bottom" ref={bottomRef} style={{ height: "100px" }} />
+        </div>
+
+        <textarea
+          ref={textareaRef}
+          className="input"
+          value={prompt}
+          onChange={(e) => {
+            setPrompt(e.target.value);
+            resizeTextarea(e.target);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask anything..."
+          rows={1}
+        />
+      </div>
+    
+      {/* Right-side content. */}
+      <div className="sideRight">
+        {/*Button classifier*/}
+        <div className="button-holder">
+          <button className="login-button">Log In</button>
+          <button className="signin-button">Sign Up</button>
+        </div>
+        <button className="share-button">Share</button>
+      </div>
+
     </div>
   );
 }
