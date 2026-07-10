@@ -2,6 +2,7 @@ package com.cosio.lm;
 
 import java.util.Map;
 
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RestController
 @CrossOrigin(origins="http://localhost:5173")
 @RequestMapping("/llm")
-public class Service {
+public class Controller {
     
     /**
      * Endpoint between microservice and react
@@ -20,7 +21,11 @@ public class Service {
      * @return
      */
     @GetMapping("/generate")
-    public String generate(@RequestParam("prompt") String prompt) {
+    public String generate(@RequestParam("prompt") String prompt, 
+    @CookieValue(value = "guestID", required = false) String guestID) {
+
+        // if (guestID = null)
+        //     guestID = guestService.createGuest();
 
         WebClient client = WebClient.create("http://localhost:8000");
         Generation response = client.post()
