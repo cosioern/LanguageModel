@@ -75,7 +75,7 @@ public class Messages {
     }
 
     public String getRole() {
-        return role.toString();
+        return role.toString().toLowerCase();
     }
 
     public String getContent() {

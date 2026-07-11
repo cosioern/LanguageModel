@@ -4,8 +4,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/chatbot_db
-    username: postrgesql
-    password: your_password
+    username: ernestocosio
+    # password: your_password
     
   jpa:
     hibernate:

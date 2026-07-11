@@ -6,9 +6,16 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 import torch
 
-# Expects a JSON object with field "promopt"
-class GenerateRequest(BaseModel):
-    prompt: str
+# # Expects a JSON object with field "promopt"
+# class GenerateRequest(BaseModel):
+#     prompt: str
+
+class Message(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: list[Message]
 
 # load
 app = FastAPI()
@@ -28,29 +35,31 @@ if not MOCK_MODE:
     model = model.merge_and_unload()
 
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-3B-Instruct")
-    system_prompt = (
-            "You are PIE, a real estate market analyst. "
-            "Provide concise, investment-focused commentary. "
-            "Base reasoning on supply, demand, interest rates, demographics, and valuation. "
-            "Avoid speculation and avoid making up specific local statistics. "
-            "Prioritize causal explanations and investment implications."
-    )
+    # system_prompt = (
+    #         "You are PIE, a real estate market analyst. "
+    #         "Provide concise, investment-focused commentary. "
+    #         "Base reasoning on supply, demand, interest rates, demographics, and valuation. "
+    #         "Avoid speculation and avoid making up specific local statistics. "
+    #         "Prioritize causal explanations and investment implications."
+    # )
 
 # Expose REST Endpoint, Receive the Prompt as JSON
 @app.post("/generate")
-def generate(req: GenerateRequest):
+def generate(req: ChatRequest):
     if MOCK_MODE:
-        response = "This is a mock response for the prompt: " + req.prompt
+        response = "This is a mock response for the prompt: " + req.messages[-1].content
 
     else:
-        messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": req.prompt}
-        ]
+        # messages = [
+        # {"role": "system", "content": system_prompt},
+        # {"role": "user", "content": req.prompt}
+        # ]
+        # messages = r.messages
 
         # Tokenize Prompt
         text = tokenizer.apply_chat_template(
-        messages,
+        # messages,
+        req.messages,
         tokenize=False,
         add_generation_prompt=True
         )
