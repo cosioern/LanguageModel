@@ -4,8 +4,8 @@ import Right from "./Right";
 import Middle from "./Middle";
 
 
-function ChatPage({initialPrompt}) {
-    const [messages, setMessages] = useState([]);
+function ChatPage({initialPrompt, chatHistory}) {
+    const [messages, setMessages] = useState(chatHistory || []);
     const [prompt, setPrompt] = useState("");
     const bottomRef = useRef(null);
     const textareaRef = useRef(null);
@@ -18,12 +18,12 @@ function ChatPage({initialPrompt}) {
         hasSentInitial.current = true;
 
         if (initialPrompt && initialPrompt.trim()) {
-            setMessages(prev => [...prev, {role: "user", text: initialPrompt}]);
+            setMessages(prev => [...prev, {role: "user", content: initialPrompt}]);
 
-            fetch(`http://localhost:8080/llm/generate?prompt=${encodeURI(initialPrompt)}`)
+            fetch(`http://localhost:8080/generate?prompt=${encodeURI(initialPrompt)}`, {credentials:"include"})
                 .then(res => res.text())
                 .then(data => {
-                    setMessages(prev => [...prev, {role:"assistant", text:data}]);
+                    setMessages(prev => [...prev, {role:"assistant", content:data}]);
                 });
         }
     }, []);
@@ -69,12 +69,12 @@ function ChatPage({initialPrompt}) {
             textareaRef.current.style.height = `${baseHeightRef.current}px`;
         }
 
-        setMessages(prev => [...prev, { role: "user", text: userMessage }]);
+        setMessages(prev => [...prev, { role: "user", content: userMessage }]);
 
-        fetch(`http://localhost:8080/llm/generate?prompt=${encodeURIComponent(userMessage)}`)
+        fetch(`http://localhost:8080/generate?prompt=${encodeURIComponent(userMessage)}`, {credentials:"include"})
             .then(res => res.text())
             .then(data => {
-            setMessages(prev => [...prev, { role: "assistant", text: data }]);
+            setMessages(prev => [...prev, { role: "assistant", content: data }]);
             });
         }
 

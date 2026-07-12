@@ -6,7 +6,7 @@ function Middle({messages, prompt, setPrompt, bottomRef, textareaRef, handleKeyD
             <div className="output">
                 {messages.map((m, i) => (
                     <div key={i} className={`message ${m.role}`}>
-                    {m.text}
+                    {m.content}
                     </div>
                 ))}
                 <div id="bottom" ref={bottomRef} style={{ height: "100px" }} />

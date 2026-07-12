@@ -1,6 +1,4 @@
 package com.cosio.lm;
-import com.cosio.lm.Controller.Generation;
-import com.cosio.lm.Controller.ChatResponse;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.ArrayList;
@@ -13,10 +11,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * ChatService
- * Service interface defining repository operations for managing application users.
+ * Service interface handling repository operations such as creating Guests/Conversations/Messages
+ * retrieving and saving user/assistant messages while also suppporting conversational memory 
+ * for the language-model assistant.
  * 
- * This service handles all messages, conversations, guests, and eventually user updates. 
- * This service also handles calls to the microservice generating assistant responses.
+ * This service handles calls to the microservice generating assistant responses.
  * 
  * @author Ernesto
  */
@@ -40,7 +39,15 @@ public class ChatService {
         this.msgRepo = msgRepo;
     }
 
-
+    /**
+     * Pulls the guest / conversation / messages to build a chat history, prompts the language
+     * model, and saves the prompt + response to the proper conversation belonging to the guest
+     * in persistence.
+     * 
+     * @param prompt is the user input to use to direct an llm generation
+     * @param guestID identifies the user for correct conversation / message handling
+     * @return
+     */
     public ChatResponse generate(String prompt, UUID guestID) {
 
         Guest guest;
@@ -51,24 +58,22 @@ public class ChatService {
             guest = findGuest(guestID);
         }
 
-        // if (guest == null) {
-        //     guest = createGuest();
-        // }
-
+        if (guest == null) {
+            guest = createGuest();
+        }
+        
         Conversations convo = findConversation(guest);
         if (convo == null) {
             convo = createConversation(guest);
         }
 
         // Top 5 desc gets latest responses, reversing orders them chronologically forward
-        List<Messages> messages = msgRepo.findTop5ByConversationsOrderBySequenceNumDesc(convo);
+        // List<Messages> messages = msgRepo.findTop5ByConversationsOrderBySequenceNumDesc(convo);
+        List<Messages> messages = msgRepo.findTop5ByConversationsOrderByCreatedAtDesc(convo);
         messages = messages.reversed();
 
-        // build
+        // build chat history
         List<Map<String, String>> history = new ArrayList<>();
-        // history.add(Map.of(Role.SYSTEM.toString().toLowerCase(), system));
-        // for (Messages m : messages) {history.add(Map.of(m.getRole().toLowerCase(), m.getContent()));}
-        // history.add(Map.of(Role.USER.toString().toLowerCase(), prompt));
         history.add(Map.of("role", "system", "content", system));
         for (Messages m : messages) {history.add(Map.of("role", m.getRole(), "content", m.getContent()));}
         history.add(Map.of("role", "user", "content", prompt));
@@ -79,13 +84,51 @@ public class ChatService {
         saveMessage(convo, Role.USER, prompt);
         saveMessage(convo, Role.ASSISTANT, response);
 
+        // package and return result
         ChatResponse result = new ChatResponse();
         result.guestID = guest.getGuestID();
         result.response = response;
         return result;
     }
 
+    /**
+     * Retrieve the chat history of a conversation of a given guest.
+     * The argument passed is guaranteed to have a value by endpoint:
+     * {@link Controller#loadConversation(UUID, jakarta.servlet.http.HttpServletResponse)}
+     * 
+     * @param guestID identifies a guest, guaranteed to be non-null
+     * @return a chat history, or nothing if a conversation is not found
+    */
+    public List<ChatMessage> getHistory(UUID guestID) {
 
+        // read cookie, retrieve proper guest / conversation
+        if (guestID == null) return List.of();
+        Guest g = findGuest(guestID);
+        if (g == null) return List.of();
+        Conversations convo = findConversation(g);
+        if (convo == null) return List.of();
+
+        // retrieve messages
+        List<Messages> msgs = msgRepo.findByConversationsOrderByCreatedAtAsc(convo);
+        // if (msgs.isEmpty()) return new ArrayList<ChatMessage>();
+
+        // package chat history into DTO and return
+        List<ChatMessage> history = new ArrayList<ChatMessage>();
+        for (Messages m: msgs) {
+            history.add(
+                new ChatMessage(Role.valueOf(m.getRole().toUpperCase()), m.getContent())
+            );
+        }
+        return history;
+    }
+
+    /**
+     * Endpoint between server and microservice running the LM generations.
+     * Context length (history) can be increased by changing findTopXConversatinos... above
+     * 
+     * @param history is comprised of the last 5 messages for conversational memory
+     * @return the LLM's generation
+     */
     private String callLLM(List<Map<String, String>> history) {
 
         WebClient client = WebClient.create("http://localhost:8000");
@@ -144,8 +187,7 @@ public class ChatService {
     }
 
     private List<Messages> findMessages(Conversations convo) {
-        List<Messages> msg = msgRepo.findByConversations(convo);
-        return msg;
+        return msgRepo.findByConversations(convo);
     }
 
 }
