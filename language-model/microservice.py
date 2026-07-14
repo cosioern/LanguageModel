@@ -1,21 +1,29 @@
 import os
-from fastapi import FastAPI
+from io import BytesIO
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 import torch
 
-# # Expects a JSON object with field "promopt"
-# class GenerateRequest(BaseModel):
-#     prompt: str
+import pymupdf
+from pathlib import Path
+from docx import Document
+from llama_index.core.node_parser import SentenceSplitter
+from sentence_transformers import SentenceTransformer
 
+# Deserializes from: {"role":"...", "content":"..."}
 class Message(BaseModel):
     role: str
     content: str
-
+# Deserializes from: {"messages": [{}"role":"...", "content":"..."}, ...]}
 class ChatRequest(BaseModel):
     messages: list[Message]
+# Deserializes from: {"embedding":[x, y, z], "chunk":"..."}
+class EmbeddedChunk(BaseModel):
+    embedding: list[float]
+    chunk: str
 
 # load
 app = FastAPI()
@@ -31,10 +39,13 @@ if not MOCK_MODE:
         device_map="auto",
     )
 
+    # laod adapters, merge model for efficiency, and load tokenizer
     model = PeftModel.from_pretrained(base_model, "./Adapters/Set_3")
     model = model.merge_and_unload()
-
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-3B-Instruct")
+
+    # load model for chunk encoding
+    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     # system_prompt = (
     #         "You are PIE, a real estate market analyst. "
     #         "Provide concise, investment-focused commentary. "
@@ -44,6 +55,11 @@ if not MOCK_MODE:
     # )
 
 # Expose REST Endpoint, Receive the Prompt as JSON
+"""
+Endpoint handling the generation and return of a response of a fine-tuned LLM.
+Arguments:
+    ChatRequest: a list of {"role" : "content"} pairs used as the promopt to the LLM 
+"""
 @app.post("/generate")
 def generate(req: ChatRequest):
     if MOCK_MODE:
@@ -83,3 +99,58 @@ def generate(req: ChatRequest):
 
     # Return Generation as JSON
     return {"generation":response}
+
+"""
+Endpoint handling document embedding
+Argument:
+    file containg contents of document to be embedded
+Return:
+    Set of embeddings
+"""
+@app.post("/embedDocument")
+async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
+    contents = await file.read
+
+    # if not file.filename.endswith((".pdf", ".txt", ".docx")):
+    #     raise HTTPException(status_code=400, detail="Unsupported Data Type")
+    
+    suffix = Path(file.name).suffix.lower()
+    doc = None
+    text = None
+
+    if suffix == ".pdf":
+        doc = pymupdf.open(stream=contents, filetype="pdf")
+        # handle restructuring
+    elif suffix == ".docx":
+        doc = Document(BytesIO(contents))
+        # handle restructuring
+    elif suffix == ".txt":
+        doc = contents.decode("utf-8")
+        # probably don't need to do much restructuring
+    else:
+        raise HTTPException(status_code=400, details="Unsupported File Type")
+
+    # assume that doc is left as text after the restructuring above
+
+    splitter = SentenceSplitter(
+        chunk_size=512,
+        chunk_overlap=50,
+    )
+
+    chunks = splitter.split_text(doc)
+    embeddings = model.encode(chunks).tolist()
+
+    return [EmbeddedChunk(content=c, embedding=e) for c, e in zip(chunks, embeddings)]
+
+"""
+Endpoint handling prompt-processing to be used by server
+to conduct a similarity search on the embeddings in persistence.
+
+Arguments:
+    Message: a JSON DTO holding {"role" : "content"}
+
+Returns: An embedding of the prompt as a fload[]
+"""
+@app.post("embedPrompt")
+def embedPrompt(req: Message) -> list[float]:
+    return model.encode(req.content).tolist()

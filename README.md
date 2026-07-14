@@ -73,6 +73,9 @@ I recommend setting up a Conda environment like so:
  - pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu128
  - pip install fastapi
  - pip install uvicorn
+ - pip install python-docx
+ - pip install llama-index
+ - pip install sentence-transformers
  - This python version is the newest that will most reliably work with the necessary dependencies.
  - This torch build is geared towards allowing PyTorch to make use of CUDA cores on supported NVidia GPUs.
 

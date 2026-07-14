@@ -54,7 +54,7 @@ public class Messages {
     /**
      * No argument constructor for JPA
      */
-    public Messages() {}
+    protected Messages() {}
 
     public Messages(Conversations conversations, Role role, String content) {
         this.conversations = conversations;

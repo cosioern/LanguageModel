@@ -22,10 +22,16 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class ChatService {
 
-
-    private final ConversationRepository convoRepo;
+    /** repo holding guests, who own conversations */
     private final GuestRepository guestRepo;
+    /** repo holding conversations, which string together messages */
+    private final ConversationRepository convoRepo;
+    /** repo holding messages between user and assistant */
     private final MessageRepository msgRepo;
+    /** client used to call microservice on localhost port 8000 */
+    private final WebClient client;
+
+    /** system prompt, to be shipped with each request to LLM */
     private final String system = "You are PIE, a real estate market analyst."
         + "Provide concise, investment-focused commentary." 
         + "Base reasoning on supply, demand, interest rates, demographics, and valuation."
@@ -33,10 +39,12 @@ public class ChatService {
         + "Prioritize causal explanations and investment implications.";
 
     // auto-injection by Spring
-    public ChatService(ConversationRepository convoRepo, GuestRepository guestRepo, MessageRepository msgRepo) {
+    public ChatService(ConversationRepository convoRepo, GuestRepository guestRepo, 
+        MessageRepository msgRepo, WebClient client) {
         this.convoRepo = convoRepo;
         this.guestRepo = guestRepo;
         this.msgRepo = msgRepo;
+        this.client = client;
     }
 
     /**
@@ -131,7 +139,6 @@ public class ChatService {
      */
     private String callLLM(List<Map<String, String>> history) {
 
-        WebClient client = WebClient.create("http://localhost:8000");
         Generation response = client.post()
             .uri("/generate")
             .bodyValue(Map.of("messages", history))
@@ -174,11 +181,11 @@ public class ChatService {
         return null;
     }
 
-    private void updateLastSeen(Guest g) {
-        g.updateLastSeen();
-        guestRepo.save(g);
-        return;
-    }
+    // private void updateLastSeen(Guest g) {
+    //     g.updateLastSeen();
+    //     guestRepo.save(g);
+    //     return;
+    // }
 
     // Message services
     private Messages saveMessage(Conversations convo, Role role, String content) {
@@ -186,8 +193,8 @@ public class ChatService {
         return msgRepo.save(msg);
     }
 
-    private List<Messages> findMessages(Conversations convo) {
-        return msgRepo.findByConversations(convo);
-    }
+    // private List<Messages> findMessages(Conversations convo) {
+    //     return msgRepo.findByConversations(convo);
+    // }
 
 }
