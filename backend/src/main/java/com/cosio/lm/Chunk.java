@@ -7,6 +7,8 @@ import org.hibernate.annotations.UuidGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import com.pgvector.PGvector;
 
@@ -28,12 +30,17 @@ public class Chunk {
     @Column(nullable = false)
     private UUID documentID;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "guestID")
+    private Guest guest;
+
     protected Chunk() {}
 
-    public Chunk(String content, PGvector embedding, UUID documentID) {
+    public Chunk(String content, PGvector embedding, UUID documentID, Guest guest) {
         this.content = content;
         this.embedding = embedding;
         this.documentID = documentID;
+        this.guest = guest;
     }
 
     public UUID getID() {return this.chunkID;}
@@ -44,4 +51,5 @@ public class Chunk {
 
     public UUID getDocID() {return this.documentID;}
 
+    public Guest getGuest() {return this.guest;}
 }

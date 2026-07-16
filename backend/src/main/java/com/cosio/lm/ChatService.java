@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.pgvector.PGvector;
+
 
 /**
  * ChatService
@@ -32,6 +34,8 @@ public class ChatService {
     private final MessageRepository msgRepo;
     /** client used to call microservice on localhost port 8000 */
     private final WebClient client;
+    /** used to perform RAG pipeline-relevant services */
+    private final EmbeddingService embeddingService;
 
     /** system prompt, to be shipped with each request to LLM */
     private final String system = "You are PIE, a real estate market analyst."
@@ -42,11 +46,12 @@ public class ChatService {
 
     // auto-injection by Spring
     public ChatService(ConversationRepository convoRepo, GuestRepository guestRepo, 
-        MessageRepository msgRepo, WebClient client) {
+        MessageRepository msgRepo, WebClient client, EmbeddingService embeddingService) {
         this.convoRepo = convoRepo;
         this.guestRepo = guestRepo;
         this.msgRepo = msgRepo;
         this.client = client;
+        this.embeddingService = embeddingService;
     }
 
     /**
@@ -61,36 +66,33 @@ public class ChatService {
     public ChatResponse generate(String prompt, UUID guestID) {
 
         Guest guest;
+        if (guestID == null) {guest = createGuest();} 
+        else {guest = findGuest(guestID);}
 
-        if (guestID == null) {
-            guest = createGuest();
-        } else {
-            guest = findGuest(guestID);
-        }
-
-        if (guest == null) {
-            guest = createGuest();
-        }
+        if (guest == null) {guest = createGuest();}
 
         // track lifespan and update in repo
         updateLastSeen(guest);
 
         Conversations convo = findConversation(guest);
-        if (convo == null) {
-            convo = createConversation(guest);
-        }
+        if (convo == null) {convo = createConversation(guest);}
 
         // Top 5 desc gets latest responses, reversing orders them chronologically forward
         // List<Messages> messages = msgRepo.findTop5ByConversationsOrderBySequenceNumDesc(convo);
         List<Messages> messages = msgRepo.findTop5ByConversationsOrderByCreatedAtDesc(convo);
         messages = messages.reversed();
 
+        // similarity search + add context to LLM prompt
+        PGvector promptVector = embeddingService.embedPrompt(prompt);
+        List<String> context = embeddingService.similaritySearch(promptVector, guest);
+        String augmentedPrompt = context.isEmpty() ? prompt : "Context:\n" + context + "\n\nQuestion: " + prompt;
+
         // build chat history
         List<Map<String, String>> history = new ArrayList<>();
         history.add(Map.of("role", "system", "content", system));
         for (Messages m : messages) {history.add(Map.of("role", m.getRole(), "content", m.getContent()));}
-        history.add(Map.of("role", "user", "content", prompt));
-
+        // history.add(Map.of("role", "user", "content", prompt));
+        history.add(Map.of("role", "user", "content", augmentedPrompt));
 
         // history.add(Map.of("prompt", prompt));
         String response = callLLM(history);

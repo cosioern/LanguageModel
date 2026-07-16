@@ -23,7 +23,7 @@ class ChatRequest(BaseModel):
 # Deserializes from: {"embedding":[x, y, z], "chunk":"..."}
 class EmbeddedChunk(BaseModel):
     embedding: list[float]
-    chunk: str
+    content: str
 
 # load
 app = FastAPI()
@@ -109,12 +109,12 @@ Return:
 """
 @app.post("/embedDocument")
 async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
-    contents = await file.read
+    contents = await file.read()
 
     # if not file.filename.endswith((".pdf", ".txt", ".docx")):
     #     raise HTTPException(status_code=400, detail="Unsupported Data Type")
     
-    suffix = Path(file.name).suffix.lower()
+    suffix = Path(file.filename).suffix.lower()
     doc = None
     text = None
 
@@ -128,7 +128,7 @@ async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
         doc = contents.decode("utf-8")
         # probably don't need to do much restructuring
     else:
-        raise HTTPException(status_code=400, details="Unsupported File Type")
+        raise HTTPException(status_code=400, detail="Unsupported File Type")
 
     # assume that doc is left as text after the restructuring above
 

@@ -1,19 +1,15 @@
 package com.cosio.lm;
 
-import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.id.UUIDGenerator;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.pgvector.PGvector;
@@ -35,8 +31,13 @@ public class EmbeddingService {
         this.repo = repo;
     }
     
-
-    public float[] embedPrompt(String prompt) {
+    /**
+     * Embeds a user's prompt to be used in a similarity search.
+     * 
+     * @param prompt to be embededded 
+     * @return a PGvector of the embedded promt
+     */
+    public PGvector embedPrompt(String prompt) {
 
         float[] embedding = client.post()
             .uri("/embedPrompt")
@@ -45,7 +46,7 @@ public class EmbeddingService {
             .bodyToMono(float[].class)
             .block();
 
-        return embedding;
+        return new PGvector(embedding);
     }
 
     /**
@@ -54,7 +55,7 @@ public class EmbeddingService {
      * @param file
      * @return
      */
-    public void embedDocument(MultipartFile file) {
+    public void embedDocument(MultipartFile file, Guest guest) {
 
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("file", file.getResource());
@@ -70,24 +71,33 @@ public class EmbeddingService {
 
         // package chunks and save to persistence
         UUID documentID = UUID.randomUUID();
+
         List<Chunk> chunks = new ArrayList<Chunk>();
         for(EmbeddedChunk e : embeddings) {
-            chunks.add(new Chunk(e.chunk, new PGvector(e.embedding()), documentID));
+            chunks.add(new Chunk(e.content(), new PGvector(e.embedding()), documentID, guest));
         }
         repo.saveAll(chunks);
 
         return;
     }
 
-    // public float similaritySearch(String prompt) {
-    //     float[] embedding = embedPrompt(prompt);
-    //     PGvector queryVector = new PGvector(embedding);
+    /**
+     * Perform a similaity search on a guest's documents.
+     * 
+     * @param promptVector is the guest's embedded prompt
+     * @param guest is the guest for whose documents should be searched through
+     * @return a list of the top 3 most similar chunks of text
+     */
+    public List<String> similaritySearch(PGvector promptVector, Guest guest) {
+        
+        List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), promptVector, 3);
+        List<String> results = new ArrayList<String>();
+        for (Chunk c : chunks) {
+            results.add(c.getContent());
+        }
 
-    //     List<Chunk> results = repo.findSimilarChunks(queryVector, 5);
+        return results;
+    }
 
-    //     return 0;
-    // }
-
-    private record EmbeddedChunk(String chunk, float[] embedding) {}
-
+    private record EmbeddedChunk(String content, float[] embedding) {}
 }
