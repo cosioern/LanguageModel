@@ -1,4 +1,5 @@
 package com.cosio.lm;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -49,11 +50,15 @@ public class Guest {
         return createdAt;
     }
 
-    public Instant getLastUpdatedA() {
-        return lastUpdatedAt;
-    }
+    // public Instant getLastUpdatedAt() {
+    //     return lastUpdatedAt;
+    // }
 
     public void updateLastSeen() {
         lastUpdatedAt = Instant.now();
+    }
+
+    public boolean isStale() {
+        return Instant.now().isAfter(lastUpdatedAt.plus(Duration.ofDays(2)));
     }
 }

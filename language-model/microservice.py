@@ -40,12 +40,12 @@ if not MOCK_MODE:
     )
 
     # laod adapters, merge model for efficiency, and load tokenizer
-    model = PeftModel.from_pretrained(base_model, "./Adapters/Set_3")
+    model = PeftModel.from_pretrained(base_model, "./Adapters2/Set_0")
     model = model.merge_and_unload()
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-3B-Instruct")
 
     # load model for chunk encoding
-    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    encoder_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     # system_prompt = (
     #         "You are PIE, a real estate market analyst. "
     #         "Provide concise, investment-focused commentary. "
@@ -84,7 +84,7 @@ def generate(req: ChatRequest):
         # Run Generator
         generated_ids = model.generate(
         **model_inputs,
-        max_new_tokens=128, #512
+        max_new_tokens=512,
         temperature=0.7,
         top_p=0.9,
         # top_k=20,
@@ -138,7 +138,7 @@ async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
     )
 
     chunks = splitter.split_text(doc)
-    embeddings = model.encode(chunks).tolist()
+    embeddings = encoder_model.encode(chunks).tolist()
 
     return [EmbeddedChunk(content=c, embedding=e) for c, e in zip(chunks, embeddings)]
 
@@ -153,4 +153,4 @@ Returns: An embedding of the prompt as a fload[]
 """
 @app.post("embedPrompt")
 def embedPrompt(req: Message) -> list[float]:
-    return model.encode(req.content).tolist()
+    return encoder_model.encode(req.content).tolist()

@@ -14,10 +14,13 @@
 /language-model/Checkpoints2
 
 # Output Files
+/language-model/Adapters
+/language-model/Adapters2
 /language-model/Set_0
 /language-model/Set_1
 /language-model/Set_2
 /language-model/Set_3
+/language-model/temp.py
 /language-model/pullExamples.py
 /language-model/Examples
 /language-model/eval-prompts.txt

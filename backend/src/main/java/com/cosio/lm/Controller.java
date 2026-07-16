@@ -1,5 +1,6 @@
 package com.cosio.lm;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class Controller {
      * @return
      */
     @GetMapping("/load")
-    public List<ChatMessage> loadConversation(@CookieValue(required=false) UUID guestID, HttpServletResponse response) {
+    public List<ChatMessage> loadConversation(@CookieValue(value = "guestID", required=false) UUID guestID, HttpServletResponse response) {
             return chat.getHistory(guestID);
     }
 
@@ -49,19 +50,21 @@ public class Controller {
      * @return
      */
     @GetMapping("/generate")
-    public String generate(@RequestParam() String prompt, 
-        @CookieValue(required = false) UUID guestID,
+    public String generate(@RequestParam(value="prompt") String prompt, 
+        @CookieValue(value="guestID", required = false) UUID guestID,
         HttpServletResponse response) {
 
         ChatResponse result = chat.generate(prompt, guestID);
 
-        if (guestID == null || !guestID.equals(result.guestID)) {
-            Cookie cookie = new Cookie("guestID", result.guestID.toString());
-            System.out.println(result.guestID);
-            cookie.setPath("/");
-            response.addCookie(cookie);
-        }
-
+        // if (guestID == null || !guestID.equals(result.guestID)) {
+        // Refresh or set cookie's lifespan for Guest
+        Cookie cookie = new Cookie("guestID", result.guestID.toString());
+        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+        // System.out.println(result.guestID);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        // }
+        
         return result.response;
     } 
 }

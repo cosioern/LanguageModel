@@ -1,10 +1,12 @@
 package com.cosio.lm;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -69,7 +71,10 @@ public class ChatService {
         if (guest == null) {
             guest = createGuest();
         }
-        
+
+        // track lifespan and update in repo
+        updateLastSeen(guest);
+
         Conversations convo = findConversation(guest);
         if (convo == null) {
             convo = createConversation(guest);
@@ -135,7 +140,7 @@ public class ChatService {
      * Context length (history) can be increased by changing findTopXConversatinos... above
      * 
      * @param history is comprised of the last 5 messages for conversational memory
-     * @return the LLM's generation
+     * @return the LLM's String generation
      */
     private String callLLM(List<Map<String, String>> history) {
 
@@ -150,7 +155,57 @@ public class ChatService {
 
     }
 
-    // Conversation services
+    /**
+     * Clears out the Guest / Conversation / Message repositories
+     * for any state Guests (hasn't been updated > 48hrs)
+     * Scheduled to run every two days.
+     */
+    @Scheduled(fixedRate = 2, timeUnit = TimeUnit.DAYS)
+    public void clearStaleGuests() {
+
+        Optional<Conversations> c;
+        List<Messages> messages;
+
+        for (Guest g : guestRepo.findAll()) {
+            // delete related conversation/messages to guest
+            if (g.isStale()) {
+                c = convoRepo.findByGuest(g);
+                if (c.isPresent()) {
+                    // clear all messages in a conversation
+                    messages = msgRepo.findByConversations(c.get());
+                    msgRepo.deleteAll(messages);
+                    // delete conversation
+                    convoRepo.delete(c.get());
+                }
+                // delete guest
+                guestRepo.delete(g);
+            }
+        }
+
+    }
+
+    // Guest helper services
+    private Guest createGuest() {
+        Guest g = new Guest();
+        guestRepo.save(g);
+        return g;
+    }
+
+    private Guest findGuest(UUID guestID) {
+        Optional<Guest> g = guestRepo.findById(guestID);
+        if (g.isPresent()) {
+            return g.get();
+        }
+        return null;
+    }
+
+    private void updateLastSeen(Guest g) {
+        g.updateLastSeen();
+        guestRepo.save(g);
+        return;
+    }
+
+    // Conversation helper services
     private Conversations createConversation(Guest g) {
         Conversations convo = new Conversations();
         convo.setGuest(g);
@@ -166,28 +221,7 @@ public class ChatService {
         return null;
     }
 
-    // Guest services
-     private Guest createGuest() {
-        Guest g = new Guest();
-        guestRepo.save(g);
-        return g;
-    }
-
-    private Guest findGuest(UUID guestID) {
-        Optional<Guest> g = guestRepo.findById(guestID);
-        if (g.isPresent()) {
-            return g.get();
-        }
-        return null;
-    }
-
-    // private void updateLastSeen(Guest g) {
-    //     g.updateLastSeen();
-    //     guestRepo.save(g);
-    //     return;
-    // }
-
-    // Message services
+    // Message helper services
     private Messages saveMessage(Conversations convo, Role role, String content) {
         Messages msg = new Messages(convo, role, content);
         return msgRepo.save(msg);
