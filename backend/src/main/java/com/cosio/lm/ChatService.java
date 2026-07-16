@@ -78,20 +78,18 @@ public class ChatService {
         if (convo == null) {convo = createConversation(guest);}
 
         // Top 5 desc gets latest responses, reversing orders them chronologically forward
-        // List<Messages> messages = msgRepo.findTop5ByConversationsOrderBySequenceNumDesc(convo);
         List<Messages> messages = msgRepo.findTop5ByConversationsOrderByCreatedAtDesc(convo);
         messages = messages.reversed();
 
         // similarity search + add context to LLM prompt
         PGvector promptVector = embeddingService.embedPrompt(prompt);
         List<String> context = embeddingService.similaritySearch(promptVector, guest);
-        String augmentedPrompt = context.isEmpty() ? prompt : "Context:\n" + context + "\n\nQuestion: " + prompt;
+        String augmentedPrompt = context.isEmpty() ? prompt : "Context:\n" + String.join("\n\n", context) + "\n\nQuestion: " + prompt;
 
         // build chat history
         List<Map<String, String>> history = new ArrayList<>();
         history.add(Map.of("role", "system", "content", system));
         for (Messages m : messages) {history.add(Map.of("role", m.getRole(), "content", m.getContent()));}
-        // history.add(Map.of("role", "user", "content", prompt));
         history.add(Map.of("role", "user", "content", augmentedPrompt));
 
         // history.add(Map.of("prompt", prompt));
