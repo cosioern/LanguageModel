@@ -87,7 +87,8 @@ function ChatPage({initialPrompt, chatHistory}) {
         })
         .then(res => {
             if (res.ok) {
-                setToast({message: "Document Uploaded Successfully", type: "success"})
+                // setToast({message: "Document Uploaded Successfully", type: "success"})
+                setToast({message: `Uploaded \"${file.name}\"`, type: "success"})
             } else {
                 setToast({mesage: "Upload Failed", type: "Error"})
             }
@@ -131,6 +132,15 @@ function ChatPage({initialPrompt, chatHistory}) {
     // assembled html page
     return (
         <div className="page">
+            {/* <button 
+                onClick={() => setToast({message: "Uploaded \"ErnestoCosioResume.pdf\" Successfully", type: "error"})}
+                style={{
+                    position: "relative",
+                    zIndex: 9999
+                }}
+            >
+                    Set Toast
+                </button> */}
             <Left />
             <Middle 
                 messages={messages}

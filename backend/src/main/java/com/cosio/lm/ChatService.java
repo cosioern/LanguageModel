@@ -2,9 +2,11 @@ package com.cosio.lm;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.time.Duration;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,8 @@ public class ChatService {
     private final WebClient client;
     /** used to perform RAG pipeline-relevant services */
     private final EmbeddingService embeddingService;
+    /** used to search through a guest's document chunks */
+    private final ChunkRepository chunkRepo;
 
     /** system prompt, to be shipped with each request to LLM */
     private final String system = "You are PIE, a real estate market analyst."
@@ -43,12 +47,14 @@ public class ChatService {
 
     // auto-injection by Spring
     public ChatService(ConversationRepository convoRepo, GuestRepository guestRepo, 
-        MessageRepository msgRepo, WebClient client, EmbeddingService embeddingService) {
+        MessageRepository msgRepo, WebClient client, EmbeddingService embeddingService,
+        ChunkRepository chunkRepo) {
         this.convoRepo = convoRepo;
         this.guestRepo = guestRepo;
         this.msgRepo = msgRepo;
         this.client = client;
         this.embeddingService = embeddingService;
+        this.chunkRepo = chunkRepo;
     }
 
     /**
@@ -158,22 +164,27 @@ public class ChatService {
     public void clearStaleGuests() {
 
         Optional<Conversations> c;
-        List<Messages> messages;
+        // List<Messages> messages;
+        Instant cutoff = Instant.now().minus(Duration.ofDays(2));
 
-        for (Guest g : guestRepo.findAll()) {
+        for (Guest g : guestRepo.findByLastUpdatedAtBefore(cutoff)) {
             // delete related conversation/messages to guest
-            if (g.isStale()) {
-                c = convoRepo.findByGuest(g);
-                if (c.isPresent()) {
-                    // clear all messages in a conversation
-                    messages = msgRepo.findByConversations(c.get());
-                    msgRepo.deleteAll(messages);
-                    // delete conversation
-                    convoRepo.delete(c.get());
-                }
-                // delete guest
-                guestRepo.delete(g);
+            // if (g.isStale()) {
+            // clear documents
+            chunkRepo.deleteByGuest(g);
+
+            c = convoRepo.findByGuest(g);
+            if (c.isPresent()) {
+                // clear all messages in a conversation
+                    // messages = msgRepo.findByConversations(c.get());
+                    // msgRepo.deleteAll(messages);
+                    msgRepo.deleteAllByConversations(c.get());
+                // delete conversation
+                convoRepo.delete(c.get());
             }
+            // delete guest
+            guestRepo.delete(g);
+        //}
         }
 
     }

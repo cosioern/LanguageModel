@@ -9,7 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
@@ -21,8 +21,9 @@ public class Conversations {
     @UuidGenerator
     private UUID conversationID;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "guestID")
+    // @ManyToOne(optional = false)
+    @OneToOne(optional = false)
+    @JoinColumn(name = "guestID", unique = true)
     private Guest guest;
 
     // @Column(nullable = false)

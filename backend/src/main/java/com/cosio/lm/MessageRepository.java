@@ -12,4 +12,5 @@ public interface MessageRepository extends JpaRepository<Messages, UUID> {
     List<Messages> findTop5ByConversationsOrderByCreatedAtDesc(Conversations convo);
     List<Messages> findTop10ByConversationsOrderByCreatedAtDesc(Conversations convo);
     List<Messages> findTop20ByConversationsOrderByCreatedAtDesc(Conversations convo);
+    void deleteAllByConversations(Conversations convo);
 }

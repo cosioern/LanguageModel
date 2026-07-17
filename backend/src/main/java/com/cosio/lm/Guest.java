@@ -58,7 +58,8 @@ public class Guest {
         lastUpdatedAt = Instant.now();
     }
 
-    public boolean isStale() {
-        return Instant.now().isAfter(lastUpdatedAt.plus(Duration.ofDays(2)));
-    }
+    // redundant check, instead checks via repository at ChatService.clearStaleGuest
+    // public boolean isStale() {
+    //     return Instant.now().isAfter(lastUpdatedAt.plus(Duration.ofDays(2)));
+    // }
 }
