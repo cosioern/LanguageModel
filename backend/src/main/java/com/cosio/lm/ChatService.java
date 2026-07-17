@@ -65,14 +65,7 @@ public class ChatService {
      */
     public ChatResponse generate(String prompt, UUID guestID) {
 
-        Guest guest;
-        if (guestID == null) {guest = createGuest();} 
-        else {guest = findGuest(guestID);}
-
-        if (guest == null) {guest = createGuest();}
-
-        // track lifespan and update in repo
-        updateLastSeen(guest);
+        Guest guest = resolveGuest(guestID);
 
         Conversations convo = findConversation(guest);
         if (convo == null) {convo = createConversation(guest);}
@@ -118,6 +111,8 @@ public class ChatService {
         if (guestID == null) return List.of();
         Guest g = findGuest(guestID);
         if (g == null) return List.of();
+        g.updateLastSeen();
+        
         Conversations convo = findConversation(g);
         if (convo == null) return List.of();
 
@@ -197,6 +192,17 @@ public class ChatService {
             return g.get();
         }
         return null;
+    }
+
+    public Guest resolveGuest(UUID guestID) {
+        Guest guest;
+        if (guestID == null) {guest = createGuest();} 
+        else {guest = findGuest(guestID);}
+
+        if (guest == null) {guest = createGuest();}
+        updateLastSeen(guest);
+        
+        return guest;
     }
 
     private void updateLastSeen(Guest g) {

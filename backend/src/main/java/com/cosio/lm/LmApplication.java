@@ -2,14 +2,19 @@ package com.cosio.lm;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
+
 import com.pgvector.PGvector;
 
 import java.util.List;
@@ -36,18 +41,16 @@ public class LmApplication {
 
 	/**
 	 * For proper JDBC compatability with pgvector
+     * 
 	 * @param dataSource
 	 * @return
 	 * @throws Exception
 	 */
-	@Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) throws Exception {
-        JdbcTemplate template = new JdbcTemplate(dataSource);
-        template.execute((Connection conn) -> {
-            PGvector.addVectorType(conn);
-            return null;
-        });
-        return template;
+    @Bean
+    @Primary
+    public DataSource dataSource(DataSourceProperties properties) {
+        DataSource original = properties.initializeDataSourceBuilder().build();
+        return new VectorDataSource(original);
     }
 
 	/**
@@ -68,5 +71,19 @@ public class LmApplication {
         return new CorsFilter(source);
     }
 	
+
+
+    static class VectorDataSource extends DelegatingDataSource {
+        public VectorDataSource(DataSource targDataSource) {
+            super(targDataSource);
+        }
+
+        @Override
+        public Connection getConnection() throws SQLException {
+            Connection conn = super.getConnection();
+            PGvector.addVectorType(conn);
+            return conn;
+        }
+    }
 
 }

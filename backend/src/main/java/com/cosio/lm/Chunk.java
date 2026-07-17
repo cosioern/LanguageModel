@@ -2,7 +2,9 @@ package com.cosio.lm;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +26,7 @@ public class Chunk {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @JdbcTypeCode(SqlTypes.VECTOR)
     @Column(columnDefinition = "vector(384)", nullable = false)
     private PGvector embedding;
 

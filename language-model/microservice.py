@@ -151,6 +151,6 @@ Arguments:
 
 Returns: An embedding of the prompt as a fload[]
 """
-@app.post("embedPrompt")
+@app.post("/embedPrompt")
 def embedPrompt(req: Message) -> list[float]:
     return encoder_model.encode(req.content).tolist()

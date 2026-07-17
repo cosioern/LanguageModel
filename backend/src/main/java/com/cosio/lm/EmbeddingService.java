@@ -3,6 +3,7 @@ package com.cosio.lm;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,6 +20,7 @@ public class EmbeddingService {
     
     /** client used to call microservice on localhost port 8000 */
     private final WebClient client;
+    /** holds chunks of text, tied to a document and a guest */
     private final ChunkRepository repo;
 
 
@@ -90,7 +92,9 @@ public class EmbeddingService {
      */
     public List<String> similaritySearch(PGvector promptVector, Guest guest) {
         
-        List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), promptVector, 3);
+        // List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), promptVector, 3);
+        String vectorLiteral = Arrays.toString(promptVector.toArray());
+        List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), vectorLiteral, 3);
         List<String> results = new ArrayList<String>();
         for (Chunk c : chunks) {
             results.add(c.getContent());

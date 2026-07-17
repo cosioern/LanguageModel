@@ -6,9 +6,11 @@ import java.util.UUID;
 
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,8 +20,16 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/")
 public class Controller {
     
-    private final ChatService chat;
-    public Controller(ChatService chat) {this.chat = chat;}
+    /** used to handle mesasges / conversations and handle calls to LLM endpoints*/
+    private final ChatService chatService;
+    /** used to perform RAG pipeline-relevant services */
+    private final EmbeddingService embeddingService;
+
+    // Constructor auto-injected by Spring
+    public Controller(ChatService chat, EmbeddingService embeddingService) {
+        this.chatService = chat;
+        this.embeddingService = embeddingService;
+    }
 
     /**
      * Finds and pushes chat history to the frontend if there is a valid cookie.
@@ -35,7 +45,7 @@ public class Controller {
      */
     @GetMapping("/load")
     public List<ChatMessage> loadConversation(@CookieValue(value = "guestID", required=false) UUID guestID, HttpServletResponse response) {
-            return chat.getHistory(guestID);
+            return chatService.getHistory(guestID);
     }
 
     /**
@@ -49,22 +59,45 @@ public class Controller {
      * @param response allows for cookies to be sent
      * @return
      */
-    @GetMapping("/generate")
+    @PostMapping("/generate")
     public String generate(@RequestParam(value="prompt") String prompt, 
         @CookieValue(value="guestID", required = false) UUID guestID,
         HttpServletResponse response) {
 
-        ChatResponse result = chat.generate(prompt, guestID);
+        ChatResponse result = chatService.generate(prompt, guestID);
 
         // if (guestID == null || !guestID.equals(result.guestID)) {
         // Refresh or set cookie's lifespan for Guest
         Cookie cookie = new Cookie("guestID", result.guestID.toString());
         cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
-        // System.out.println(result.guestID);
         cookie.setPath("/");
         response.addCookie(cookie);
         // }
         
         return result.response;
     } 
+
+    /**
+     * Endpoint responsible handling a document upload and updating cookie.
+     * 
+     * @param file to upload as a set of embeddings
+     * @param guestID to associate file upload with
+     * @param response to return with refreshed cookie
+     */
+    @PostMapping("/embedDocument")
+    public void embedDocument(@RequestParam(value="document") MultipartFile file, 
+    @CookieValue(value = "guestID", required = false) UUID guestID, 
+    HttpServletResponse response) {
+
+        Guest guest = chatService.resolveGuest(guestID);
+        Cookie cookie = new Cookie("guestID", guest.getGuestID().toString());
+        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+        cookie.setPath("/");
+        response.addCookie(cookie);
+
+        embeddingService.embedDocument(file, guest);
+    
+        return;
+    }
+
 }
