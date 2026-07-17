@@ -2,6 +2,7 @@ package com.cosio.lm;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.Array;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
@@ -12,8 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import com.pgvector.PGvector;
-
 
 @Entity
 @Table(name="chunk")
@@ -26,9 +25,14 @@ public class Chunk {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    // @JdbcTypeCode(SqlTypes.VECTOR)
+    // @Column(columnDefinition = "vector(384)", nullable = false)
+    // private PGvector embedding;
     @JdbcTypeCode(SqlTypes.VECTOR)
-    @Column(columnDefinition = "vector(384)", nullable = false)
-    private PGvector embedding;
+    @Array(length = 384)
+    @Column(nullable = false)
+    private float[] embedding;
+    
 
     @Column(nullable = false)
     private UUID documentID;
@@ -39,7 +43,7 @@ public class Chunk {
 
     protected Chunk() {}
 
-    public Chunk(String content, PGvector embedding, UUID documentID, Guest guest) {
+    public Chunk(String content, float[] embedding, UUID documentID, Guest guest) {
         this.content = content;
         this.embedding = embedding;
         this.documentID = documentID;
@@ -50,7 +54,7 @@ public class Chunk {
 
     public String getContent() {return this.content;}
 
-    public PGvector getEmbedding() {return this.embedding;}
+    public float[] getEmbedding() {return this.embedding;}
 
     public UUID getDocID() {return this.documentID;}
 

@@ -3,7 +3,6 @@ package com.cosio.lm;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -12,8 +11,6 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import com.pgvector.PGvector;
 
 @Service
 public class EmbeddingService {
@@ -39,7 +36,7 @@ public class EmbeddingService {
      * @param prompt to be embededded 
      * @return a PGvector of the embedded promt
      */
-    public PGvector embedPrompt(String prompt) {
+    public float[] embedPrompt(String prompt) {
 
         float[] embedding = client.post()
             .uri("/embedPrompt")
@@ -48,7 +45,7 @@ public class EmbeddingService {
             .bodyToMono(float[].class)
             .block();
 
-        return new PGvector(embedding);
+        return embedding;
     }
 
     /**
@@ -76,7 +73,7 @@ public class EmbeddingService {
 
         List<Chunk> chunks = new ArrayList<Chunk>();
         for(EmbeddedChunk e : embeddings) {
-            chunks.add(new Chunk(e.content(), new PGvector(e.embedding()), documentID, guest));
+            chunks.add(new Chunk(e.content(), e.embedding(), documentID, guest));
         }
         repo.saveAll(chunks);
 
@@ -90,11 +87,11 @@ public class EmbeddingService {
      * @param guest is the guest for whose documents should be searched through
      * @return a list of the top 3 most similar chunks of text
      */
-    public List<String> similaritySearch(PGvector promptVector, Guest guest) {
+    public List<String> similaritySearch(float[] promptVector, Guest guest) {
         
-        // List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), promptVector, 3);
-        String vectorLiteral = Arrays.toString(promptVector.toArray());
-        List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), vectorLiteral, 3);
+        List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), promptVector, 3);
+        // String vectorLiteral = Arrays.toString(promptVector.toArray());
+        // List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), vectorLiteral, 3);
         List<String> results = new ArrayList<String>();
         for (Chunk c : chunks) {
             results.add(c.getContent());

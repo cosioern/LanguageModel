@@ -11,6 +11,8 @@ function ChatPage({initialPrompt, chatHistory}) {
     const textareaRef = useRef(null);
     const baseHeightRef = useRef(0);
     const hasSentInitial = useRef(false);
+    const fileInputRef = useRef(null);
+    const [toast, setToast] = useState(null);
 
     // initial  api call, seamless transition between LandingPage and ChatPage
     useEffect(() => {
@@ -20,7 +22,10 @@ function ChatPage({initialPrompt, chatHistory}) {
         if (initialPrompt && initialPrompt.trim()) {
             setMessages(prev => [...prev, {role: "user", content: initialPrompt}]);
 
-            fetch(`http://localhost:8080/generate?prompt=${encodeURI(initialPrompt)}`, {credentials:"include"})
+            fetch(`http://localhost:8080/generate?prompt=${encodeURI(initialPrompt)}`, {
+                credentials:"include", 
+                method:"POST"
+            })
                 .then(res => res.text())
                 .then(data => {
                     setMessages(prev => [...prev, {role:"assistant", content:data}]);
@@ -51,12 +56,47 @@ function ChatPage({initialPrompt, chatHistory}) {
         }
     }, []);
 
+    useEffect(() => {
+        if (!toast) return;
+
+        const timer = setTimeout(() => {
+            setToast(null);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [toast])
+
     // grows input bar
     function resizeTextarea(el) {
         el.style.height = "auto";
         const needed = el.scrollHeight;
         // only grow if content actually needs more than one line's worth of space
         el.style.height = `${Math.max(needed, baseHeightRef.current)}px`;
+    }
+
+    function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("document", file);
+
+        fetch(`http://localhost:8080/embedDocument`, {
+            method: "POST",
+            credentials: "include",
+            body: formData
+        })
+        .then(res => {
+            if (res.ok) {
+                setToast({message: "Document Uploaded Successfully", type: "success"})
+            } else {
+                setToast({mesage: "Upload Failed", type: "Error"})
+            }
+        })
+        .catch(() => {
+            setToast({message: "Upload failed", type: "Error"});
+        });
+
+        e.target.value = "";
     }
 
     // send prompts, return messages
@@ -71,7 +111,10 @@ function ChatPage({initialPrompt, chatHistory}) {
 
         setMessages(prev => [...prev, { role: "user", content: userMessage }]);
 
-        fetch(`http://localhost:8080/generate?prompt=${encodeURIComponent(userMessage)}`, {credentials:"include"})
+        fetch(`http://localhost:8080/generate?prompt=${encodeURIComponent(userMessage)}`, {
+            credentials:"include",
+            method:"POST"
+        })
             .then(res => res.text())
             .then(data => {
             setMessages(prev => [...prev, { role: "assistant", content: data }]);
@@ -97,8 +140,17 @@ function ChatPage({initialPrompt, chatHistory}) {
                 textareaRef={textareaRef}
                 handleKeyDown={handleKeyDown}
                 resizeTextarea={resizeTextarea}
+
+                fileInputRef={fileInputRef}
+                handleFileUpload={handleFileUpload}
             />
             <Right />
+
+            {toast && (
+                <div className={`toast toast-${toast.type}`}>
+                    {toast.message}
+                </div>
+            )}
         </div>
   );
 }

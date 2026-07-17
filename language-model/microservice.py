@@ -120,9 +120,11 @@ async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
 
     if suffix == ".pdf":
         doc = pymupdf.open(stream=contents, filetype="pdf")
+        doc = "\n".join(page.get_text() for page in doc)
         # handle restructuring
     elif suffix == ".docx":
         doc = Document(BytesIO(contents))
+        doc = "\n".join(p.text for p in doc.paragraphs)
         # handle restructuring
     elif suffix == ".txt":
         doc = contents.decode("utf-8")

@@ -10,9 +10,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.pgvector.PGvector;
-
-
 /**
  * ChatService
  * Service interface handling repository operations such as creating Guests/Conversations/Messages
@@ -75,7 +72,7 @@ public class ChatService {
         messages = messages.reversed();
 
         // similarity search + add context to LLM prompt
-        PGvector promptVector = embeddingService.embedPrompt(prompt);
+        float[] promptVector = embeddingService.embedPrompt(prompt);
         List<String> context = embeddingService.similaritySearch(promptVector, guest);
         String augmentedPrompt = context.isEmpty() ? prompt : "Context:\n" + String.join("\n\n", context) + "\n\nQuestion: " + prompt;
 
@@ -154,6 +151,8 @@ public class ChatService {
      * Clears out the Guest / Conversation / Message repositories
      * for any state Guests (hasn't been updated > 48hrs)
      * Scheduled to run every two days.
+     * 
+     * ADD FEATURE TO CLEAR DOCUMENTS AS WELL
      */
     @Scheduled(fixedRate = 2, timeUnit = TimeUnit.DAYS)
     public void clearStaleGuests() {

@@ -1,6 +1,6 @@
 import "./Middle.css";
 
-function Middle({messages, prompt, setPrompt, bottomRef, textareaRef, handleKeyDown, resizeTextarea}) {
+function Middle({messages, prompt, setPrompt, bottomRef, textareaRef, handleKeyDown, resizeTextarea, fileInputRef, handleFileUpload}) {
     return (
         <div className="container">
             <div className="output">
@@ -12,18 +12,35 @@ function Middle({messages, prompt, setPrompt, bottomRef, textareaRef, handleKeyD
                 <div id="bottom" ref={bottomRef} style={{ height: "100px" }} />
             </div>
 
-            <textarea
-            ref={textareaRef}
-            className="input"
-            value={prompt}
-            onChange={(e) => {
-                setPrompt(e.target.value);
-                resizeTextarea(e.target);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask anything..."
-            rows={1}
-            />
+            <div className="input-wrapper">
+                <button
+                    type="button"
+                    className="upload-button"
+                    onClick={() => fileInputRef.current.click()}
+                >
+                    +
+                </button>
+
+                <textarea
+                ref={textareaRef}
+                className="input"
+                value={prompt}
+                onChange={(e) => {
+                    setPrompt(e.target.value);
+                    resizeTextarea(e.target);
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask anything..."
+                rows={1}
+                />
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={handleFileUpload}
+                />
+            </div>
         </div>
     );
 }
