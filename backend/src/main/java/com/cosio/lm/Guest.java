@@ -1,14 +1,5 @@
 package com.cosio.lm;
-import java.time.Instant;
-import java.util.UUID;
-
-import org.hibernate.annotations.UuidGenerator;
-
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
 
 /**
  * Guest
@@ -17,48 +8,11 @@ import jakarta.persistence.Table;
  * {guestID, createdAt, lastSeen}
  */
 @Entity
-@Table(name="guest")
-public class Guest {
+public class Guest extends Account{
     
-    @Id
-    @UuidGenerator
-    private UUID guestID;
-
-    @Column(nullable= false, updatable=false)
-    private Instant createdAt;
-
-    @Column(nullable = false, updatable = true)
-    private Instant lastUpdatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        lastUpdatedAt = Instant.now();
-    }
-
     /**
      * No argument constructor for JPA
      */
     protected Guest() {}
 
-    public UUID getGuestID() {
-        return guestID;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    // public Instant getLastUpdatedAt() {
-    //     return lastUpdatedAt;
-    // }
-
-    public void updateLastSeen() {
-        lastUpdatedAt = Instant.now();
-    }
-
-    // redundant check, instead checks via repository at ChatService.clearStaleGuest
-    // public boolean isStale() {
-    //     return Instant.now().isAfter(lastUpdatedAt.plus(Duration.ofDays(2)));
-    // }
 }

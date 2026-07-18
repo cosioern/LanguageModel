@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChunkRepository extends JpaRepository<Chunk, UUID>{
-    @Query(value = "SELECT * FROM chunk WHERE guestID = :guestID ORDER BY embedding <-> CAST(:queryVector AS vector) LIMIT :k", nativeQuery = true)
-    List<Chunk> findSimilarChunks(@Param("guestID") UUID guestID, @Param("queryVector") float[] queryVector, @Param("k") int k);
+    @Query(value = "SELECT * FROM chunk WHERE accountID = :accountID ORDER BY embedding <-> CAST(:queryVector AS vector) LIMIT :k", nativeQuery = true)
+    List<Chunk> findSimilarChunks(@Param("accountID") UUID accountID, @Param("queryVector") float[] queryVector, @Param("k") int k);
 
-    List<Chunk> findByGuest(Guest guest);
-    void deleteByGuest(Guest guest);
+    List<Chunk> findByAccount(Account account);
+    void deleteByAccount(Account account);
 }

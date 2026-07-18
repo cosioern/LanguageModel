@@ -26,6 +26,8 @@ public class Controller {
     /** used to perform RAG pipeline-relevant services */
     private final EmbeddingService embeddingService;
 
+    
+
     // Constructor auto-injected by Spring
     public Controller(ChatService chat, EmbeddingService embeddingService) {
         this.chatService = chat;
@@ -46,7 +48,11 @@ public class Controller {
      */
     @GetMapping("/load")
     public List<ChatMessage> loadConversation(@CookieValue(value = "guestID", required=false) UUID guestID, HttpServletResponse response) {
-            return chatService.getHistory(guestID);
+        if (guestID == null) return List.of();
+        Guest g = chatService.findGuest(guestID);
+        // if (g == null) return List.of();    
+
+        return chatService.getHistory(g);
     }
 
     /**
@@ -66,7 +72,7 @@ public class Controller {
         HttpServletResponse response) {
 
         Guest guest = chatService.resolveGuest(guestID);
-        Cookie cookie = new Cookie("guestID", guest.getGuestID().toString());
+        Cookie cookie = new Cookie("guestID", guest.getID().toString());
         cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
         cookie.setPath("/");
         response.addCookie(cookie);
@@ -93,7 +99,7 @@ public class Controller {
     HttpServletResponse response) {
 
         Guest guest = chatService.resolveGuest(guestID);
-        Cookie cookie = new Cookie("guestID", guest.getGuestID().toString());
+        Cookie cookie = new Cookie("guestID", guest.getID().toString());
         cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
         cookie.setPath("/");
         response.addCookie(cookie);

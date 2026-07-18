@@ -25,9 +25,6 @@ public class Chunk {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    // @JdbcTypeCode(SqlTypes.VECTOR)
-    // @Column(columnDefinition = "vector(384)", nullable = false)
-    // private PGvector embedding;
     @JdbcTypeCode(SqlTypes.VECTOR)
     @Array(length = 384)
     @Column(nullable = false)
@@ -38,16 +35,16 @@ public class Chunk {
     private UUID documentID;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "guestID")
-    private Guest guest;
+    @JoinColumn(name = "accountID")
+    private Account account;
 
     protected Chunk() {}
 
-    public Chunk(String content, float[] embedding, UUID documentID, Guest guest) {
+    public Chunk(String content, float[] embedding, UUID documentID, Account account) {
         this.content = content;
         this.embedding = embedding;
         this.documentID = documentID;
-        this.guest = guest;
+        this.account = account;
     }
 
     public UUID getID() {return this.chunkID;}
@@ -58,5 +55,5 @@ public class Chunk {
 
     public UUID getDocID() {return this.documentID;}
 
-    public Guest getGuest() {return this.guest;}
+    public Account getAccount() {return this.account;}
 }

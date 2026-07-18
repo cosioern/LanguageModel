@@ -23,8 +23,8 @@ public class Conversations {
 
     // @ManyToOne(optional = false)
     @OneToOne(optional = false)
-    @JoinColumn(name = "guestID", unique = true)
-    private Guest guest;
+    @JoinColumn(name = "accountID", unique = true)
+    private Account account;
 
     // @Column(nullable = false)
     // private String title;
@@ -50,8 +50,8 @@ public class Conversations {
         return createdAt;
     }
 
-    public void setGuest(Guest g) {
-        this.guest = g;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     // instead, use Guest.lastUpdatedAt to clear guest + their conversation

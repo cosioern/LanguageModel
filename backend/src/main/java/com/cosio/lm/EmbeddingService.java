@@ -54,7 +54,7 @@ public class EmbeddingService {
      * @param file
      * @return
      */
-    public void embedDocument(MultipartFile file, Guest guest) {
+    public void embedDocument(MultipartFile file, Account account) {
 
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("file", file.getResource());
@@ -73,7 +73,7 @@ public class EmbeddingService {
 
         List<Chunk> chunks = new ArrayList<Chunk>();
         for(EmbeddedChunk e : embeddings) {
-            chunks.add(new Chunk(e.content(), e.embedding(), documentID, guest));
+            chunks.add(new Chunk(e.content(), e.embedding(), documentID, account));
         }
         repo.saveAll(chunks);
 
@@ -87,11 +87,9 @@ public class EmbeddingService {
      * @param guest is the guest for whose documents should be searched through
      * @return a list of the top 3 most similar chunks of text
      */
-    public List<String> similaritySearch(float[] promptVector, Guest guest) {
+    public List<String> similaritySearch(float[] promptVector, Account account) {
         
-        List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), promptVector, 3);
-        // String vectorLiteral = Arrays.toString(promptVector.toArray());
-        // List<Chunk> chunks = repo.findSimilarChunks(guest.getGuestID(), vectorLiteral, 3);
+        List<Chunk> chunks = repo.findSimilarChunks(account.getID(), promptVector, 3);
         List<String> results = new ArrayList<String>();
         for (Chunk c : chunks) {
             results.add(c.getContent());

@@ -27,6 +27,8 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 
 	implementation 'org.hibernate.orm:hibernate-vector:7.4.1.Final'
+	implementation 'org.springframework.security:spring-security-crypto:6.5.1'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 tasks.named('test') {

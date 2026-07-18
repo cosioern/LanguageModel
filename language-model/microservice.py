@@ -100,24 +100,7 @@ def generate(req: ChatRequest):
             for token in streamer:
                 yield token
             thread.join()
-        # Run Generator
-        # generated_ids = model.generate(
-        #     **model_inputs,
-        #     max_new_tokens=512,
-        #     temperature=0.7,
-        #     top_p=0.9,
-        #     # top_k=20,
-        #     # repetition_penalty=1.1,
-        #     do_sample=True,
-        #     streamer = streamer,
-        # )
-        # generated_ids = [
-        #     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        # ]
-        # # Decode Output
-        # response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-    # return {"generation":response}
     return StreamingResponse(token_generator(), media_type="text/plain")
 
 """

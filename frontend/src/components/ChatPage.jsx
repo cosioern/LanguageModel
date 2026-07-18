@@ -3,7 +3,13 @@ import Left from "./Left";
 import Right from "./Right";
 import Middle from "./Middle";
 
-
+/**
+ * ChatPage handles user messages and assistant resposnes,
+ * calling Spring endpoints and populating the screen.
+ * 
+ * @param {*} param0 contains the messages to populate on screen
+ * @returns the constructed chat page
+ */
 function ChatPage({initialPrompt, chatHistory}) {
     const [messages, setMessages] = useState(chatHistory || []);
     const [prompt, setPrompt] = useState("");
@@ -18,10 +24,13 @@ function ChatPage({initialPrompt, chatHistory}) {
     // initial  api call, seamless transition between LandingPage and ChatPage
     useEffect(() => {
         async function init() {
+            // blocks while streaming
             if (isStreaming) return;
+            // guard against Strict Mode running twiceon mount
             if (hasSentInitial.current) return;
             hasSentInitial.current = true;
 
+            // sends request to LLM if prompt is nonempty upon reaching ChatPage
             if (initialPrompt && initialPrompt.trim()) {
                 setMessages(prev => [...prev, {role: "user", content: initialPrompt}]);
 
@@ -36,7 +45,7 @@ function ChatPage({initialPrompt, chatHistory}) {
                 let tokens = await reader.read();
                 setMessages(prev => [...prev, {role: "assistant", content: ""}]);
                 
-                // stream tokens, append/update only the latest assistant message
+                // stream LLM response, upate latest assistant message only
                 while(!tokens.done) {
                     assistantMessage += decoder.decode(tokens.value);
                     setMessages(prev => {
@@ -53,7 +62,7 @@ function ChatPage({initialPrompt, chatHistory}) {
     }, []);
     
     
-    // scrolls down the page as new messages are added, but only when page is filled
+    // scrolls down the page as new messages are added, but only when page is full
     useEffect(() => {
         const bottomEl = bottomRef.current;
         if (!bottomEl) return;
@@ -75,6 +84,7 @@ function ChatPage({initialPrompt, chatHistory}) {
         }
     }, []);
 
+    // timeout effect for file upload toast message
     useEffect(() => {
         if (!toast) return;
 
@@ -84,7 +94,11 @@ function ChatPage({initialPrompt, chatHistory}) {
         return () => clearTimeout(timer);
     }, [toast])
 
-    // grows input bar
+    /**
+     * Resizes input field to fir content
+     * 
+     * @param {HTMLTextAreaElement} el is the textarea DOM element
+     */
     function resizeTextarea(el) {
         el.style.height = "auto";
         const needed = el.scrollHeight;
@@ -92,7 +106,13 @@ function ChatPage({initialPrompt, chatHistory}) {
         el.style.height = `${Math.max(needed, baseHeightRef.current)}px`;
     }
 
-    // calls Spring endpoint /embeDocument
+    /**
+     * File Upload for RAG pipeline
+     * Sets an on-screen toast upon success/failure
+     * 
+     * @param {*} e is the change event from the file input
+     * @returns nothing
+     */
     function handleFileUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -119,8 +139,14 @@ function ChatPage({initialPrompt, chatHistory}) {
         e.target.value = "";
     }
 
-    // send prompts, return messages
+    /**
+     * Sends prompt to backebd and streams the response
+     * back token-by-toiken, updating the UI as tokens arrive.
+     * 
+     * @returns {Promis<void>}
+     */
     async function sendPrompt() {
+        // blocks while streaming response or empty prompt
         if (isStreaming) return;
         if (!prompt.trim()) return;
 
@@ -155,6 +181,11 @@ function ChatPage({initialPrompt, chatHistory}) {
         setIsStreaming(false);
     }
 
+    /**
+     * Calls sendPrompt() when Enter is pressed without Shift
+     * 
+     * @param {KeyboardEvent} e - the keydown evet from textarea
+     */
     function handleKeyDown(e) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();

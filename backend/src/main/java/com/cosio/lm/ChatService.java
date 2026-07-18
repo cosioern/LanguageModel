@@ -40,6 +40,8 @@ public class ChatService {
     private final EmbeddingService embeddingService;
     /** used to search through a guest's document chunks */
     private final ChunkRepository chunkRepo;
+    /** used to search through Accounts */
+    private final AccountRepository accountRepo;
 
     /** system prompt, to be shipped with each request to LLM */
     private final String system = "You are PIE, a real estate market analyst."
@@ -51,13 +53,14 @@ public class ChatService {
     // auto-injection by Spring
     public ChatService(ConversationRepository convoRepo, GuestRepository guestRepo, 
         MessageRepository msgRepo, WebClient client, EmbeddingService embeddingService,
-        ChunkRepository chunkRepo) {
+        ChunkRepository chunkRepo, AccountRepository accountRepo) {
         this.convoRepo = convoRepo;
         this.guestRepo = guestRepo;
         this.msgRepo = msgRepo;
         this.client = client;
         this.embeddingService = embeddingService;
         this.chunkRepo = chunkRepo;
+        this.accountRepo = accountRepo;
     }
 
     /**
@@ -69,10 +72,10 @@ public class ChatService {
      * @param guestID identifies the user for correct conversation / message handling
      * @return
      */
-    public Flux<String> generate(String prompt, Guest guest) {
+    public Flux<String> generate(String prompt, Account account) {
 
-        Conversations convo = findConversation(guest);
-        if (convo == null) {convo = createConversation(guest);}
+        Conversations convo = findConversation(account);
+        if (convo == null) {convo = createConversation(account);}
 
         // Top 5 desc gets latest responses, reversing orders them chronologically forward
         List<Messages> messages = msgRepo.findTop5ByConversationsOrderByCreatedAtDesc(convo);
@@ -80,7 +83,7 @@ public class ChatService {
 
         // similarity search + add context to LLM prompt
         float[] promptVector = embeddingService.embedPrompt(prompt);
-        List<String> context = embeddingService.similaritySearch(promptVector, guest);
+        List<String> context = embeddingService.similaritySearch(promptVector, account);
         String augmentedPrompt = context.isEmpty() ? prompt : "Context:\n" + String.join("\n\n", context) + "\n\nQuestion: " + prompt;
 
         // build chat history
@@ -120,15 +123,16 @@ public class ChatService {
      * @param guestID identifies a guest, guaranteed to be non-null
      * @return a chat history, or nothing if a conversation is not found
     */
-    public List<ChatMessage> getHistory(UUID guestID) {
+    public List<ChatMessage> getHistory(Account account) {
 
         // read cookie, retrieve proper guest / conversation
-        if (guestID == null) return List.of();
-        Guest g = findGuest(guestID);
-        if (g == null) return List.of();
-        g.updateLastSeen();
+        // if (accountID == null) return List.of();
+        // Guest g = findGuest(accountID);
+        // if (g == null) return List.of();
+        if (account == null) return List.of();
+        updateLastSeen(account);
         
-        Conversations convo = findConversation(g);
+        Conversations convo = findConversation(account);
         if (convo == null) return List.of();
 
         // retrieve messages
@@ -153,13 +157,6 @@ public class ChatService {
      * @return the LLM's String generation
      */
     private Flux<String> callLLM(List<Map<String, String>> history) {
-        // Generation response = client.post()
-        //     .uri("/generate")
-        //     .bodyValue(Map.of("messages", history))
-        //     .retrieve()
-        //     .bodyToMono(Generation.class)
-        //     .block();
-
         // return response.generation;
         return client.post()
             .uri("/generate")
@@ -181,27 +178,18 @@ public class ChatService {
     public void clearStaleGuests() {
 
         Optional<Conversations> c;
-        // List<Messages> messages;
         Instant cutoff = Instant.now().minus(Duration.ofDays(2));
 
         for (Guest g : guestRepo.findByLastUpdatedAtBefore(cutoff)) {
-            // delete related conversation/messages to guest
-            // if (g.isStale()) {
-            // clear documents
-            chunkRepo.deleteByGuest(g);
+            chunkRepo.deleteByAccount(g);
 
-            c = convoRepo.findByGuest(g);
+            c = convoRepo.findByAccount(g);
             if (c.isPresent()) {
-                // clear all messages in a conversation
-                    // messages = msgRepo.findByConversations(c.get());
-                    // msgRepo.deleteAll(messages);
-                    msgRepo.deleteAllByConversations(c.get());
-                // delete conversation
+                msgRepo.deleteAllByConversations(c.get());
                 convoRepo.delete(c.get());
             }
             // delete guest
             guestRepo.delete(g);
-        //}
         }
 
     }
@@ -213,7 +201,7 @@ public class ChatService {
         return g;
     }
 
-    private Guest findGuest(UUID guestID) {
+    public Guest findGuest(UUID guestID) {
         Optional<Guest> g = guestRepo.findById(guestID);
         if (g.isPresent()) {
             return g.get();
@@ -232,22 +220,22 @@ public class ChatService {
         return guest;
     }
 
-    private void updateLastSeen(Guest g) {
-        g.updateLastSeen();
-        guestRepo.save(g);
+    private void updateLastSeen(Account a) {
+        a.updateLastSeen();
+        accountRepo.save(a);
         return;
     }
 
     // Conversation helper services
-    private Conversations createConversation(Guest g) {
+    private Conversations createConversation(Account a) {
         Conversations convo = new Conversations();
-        convo.setGuest(g);
+        convo.setAccount(a);
         convoRepo.save(convo);
         return convo;
     }
 
-    private Conversations findConversation(Guest g) {
-        Optional<Conversations> convo = convoRepo.findByGuest(g);
+    private Conversations findConversation(Account a) {
+        Optional<Conversations> convo = convoRepo.findByAccount(a);
         if (convo.isPresent())
             return convo.get();
         

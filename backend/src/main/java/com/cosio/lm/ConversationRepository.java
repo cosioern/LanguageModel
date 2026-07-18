@@ -4,6 +4,6 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ConversationRepository extends JpaRepository<Conversations, UUID>{
-    Optional<Conversations> findByGuest(Guest guest);
-    void deleteByGuest(Guest guest);
+    Optional<Conversations> findByAccount(Account account);
+    void deleteByAccount(Account account);
 }
