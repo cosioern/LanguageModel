@@ -13,24 +13,43 @@ function ChatPage({initialPrompt, chatHistory}) {
     const hasSentInitial = useRef(false);
     const fileInputRef = useRef(null);
     const [toast, setToast] = useState(null);
+    const [isStreaming, setIsStreaming] = useState(false);
 
     // initial  api call, seamless transition between LandingPage and ChatPage
     useEffect(() => {
-        if (hasSentInitial.current) return;
-        hasSentInitial.current = true;
+        async function init() {
+            if (isStreaming) return;
+            if (hasSentInitial.current) return;
+            hasSentInitial.current = true;
 
-        if (initialPrompt && initialPrompt.trim()) {
-            setMessages(prev => [...prev, {role: "user", content: initialPrompt}]);
+            if (initialPrompt && initialPrompt.trim()) {
+                setMessages(prev => [...prev, {role: "user", content: initialPrompt}]);
 
-            fetch(`http://localhost:8080/generate?prompt=${encodeURI(initialPrompt)}`, {
-                credentials:"include", 
-                method:"POST"
-            })
-                .then(res => res.text())
-                .then(data => {
-                    setMessages(prev => [...prev, {role:"assistant", content:data}]);
+                let assistantMessage = "";
+                setIsStreaming(true);
+                const res = await fetch(`http://localhost:8080/generate?prompt=${encodeURI(initialPrompt)}`, {
+                    credentials:"include", 
+                    method:"POST"
                 });
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder;
+                let tokens = await reader.read();
+                setMessages(prev => [...prev, {role: "assistant", content: ""}]);
+                
+                // stream tokens, append/update only the latest assistant message
+                while(!tokens.done) {
+                    assistantMessage += decoder.decode(tokens.value);
+                    setMessages(prev => {
+                        const updated = [...prev];
+                        updated[updated.length-1] = {role: "assistant", content: assistantMessage};
+                        return updated;
+                    });
+                    tokens = await reader.read();
+                }
+                setIsStreaming(false);
+            }
         }
+        init();
     }, []);
     
     
@@ -73,6 +92,7 @@ function ChatPage({initialPrompt, chatHistory}) {
         el.style.height = `${Math.max(needed, baseHeightRef.current)}px`;
     }
 
+    // calls Spring endpoint /embeDocument
     function handleFileUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -87,21 +107,21 @@ function ChatPage({initialPrompt, chatHistory}) {
         })
         .then(res => {
             if (res.ok) {
-                // setToast({message: "Document Uploaded Successfully", type: "success"})
                 setToast({message: `Uploaded \"${file.name}\"`, type: "success"})
             } else {
-                setToast({mesage: "Upload Failed", type: "Error"})
+                setToast({message: "Upload Failed", type: "error"})
             }
         })
         .catch(() => {
-            setToast({message: "Upload failed", type: "Error"});
+            setToast({message: "Upload failed", type: "error"});
         });
 
         e.target.value = "";
     }
 
     // send prompts, return messages
-    function sendPrompt() {
+    async function sendPrompt() {
+        if (isStreaming) return;
         if (!prompt.trim()) return;
 
         const userMessage = prompt;
@@ -112,15 +132,28 @@ function ChatPage({initialPrompt, chatHistory}) {
 
         setMessages(prev => [...prev, { role: "user", content: userMessage }]);
 
-        fetch(`http://localhost:8080/generate?prompt=${encodeURIComponent(userMessage)}`, {
+        let assistantMessage = "";
+        setIsStreaming(true);
+        const res = await fetch(`http://localhost:8080/generate?prompt=${encodeURIComponent(userMessage)}`, {
             credentials:"include",
             method:"POST"
-        })
-            .then(res => res.text())
-            .then(data => {
-            setMessages(prev => [...prev, { role: "assistant", content: data }]);
+        });
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder;
+        let tokens = await reader.read();
+        setMessages(prev => [...prev, {role: "assistant", content: ""}]);
+        // stream tokens, append/update only the latest assistant message
+        while(!tokens.done) {
+            assistantMessage += decoder.decode(tokens.value);
+            setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {role: "assistant", content: assistantMessage}
+                return updated;
             });
+            tokens = await reader.read()
         }
+        setIsStreaming(false);
+    }
 
     function handleKeyDown(e) {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -132,15 +165,6 @@ function ChatPage({initialPrompt, chatHistory}) {
     // assembled html page
     return (
         <div className="page">
-            {/* <button 
-                onClick={() => setToast({message: "Uploaded \"ErnestoCosioResume.pdf\" Successfully", type: "error"})}
-                style={{
-                    position: "relative",
-                    zIndex: 9999
-                }}
-            >
-                    Set Toast
-                </button> */}
             <Left />
             <Middle 
                 messages={messages}
@@ -150,9 +174,10 @@ function ChatPage({initialPrompt, chatHistory}) {
                 textareaRef={textareaRef}
                 handleKeyDown={handleKeyDown}
                 resizeTextarea={resizeTextarea}
-
+                sendPrompt={sendPrompt}
                 fileInputRef={fileInputRef}
                 handleFileUpload={handleFileUpload}
+                isStreaming={isStreaming}
             />
             <Right />
 

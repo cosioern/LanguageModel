@@ -12,6 +12,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import jakarta.transaction.Transactional;
+import reactor.core.publisher.Flux;
+
 /**
  * ChatService
  * Service interface handling repository operations such as creating Guests/Conversations/Messages
@@ -66,9 +69,7 @@ public class ChatService {
      * @param guestID identifies the user for correct conversation / message handling
      * @return
      */
-    public ChatResponse generate(String prompt, UUID guestID) {
-
-        Guest guest = resolveGuest(guestID);
+    public Flux<String> generate(String prompt, Guest guest) {
 
         Conversations convo = findConversation(guest);
         if (convo == null) {convo = createConversation(guest);}
@@ -88,16 +89,27 @@ public class ChatService {
         for (Messages m : messages) {history.add(Map.of("role", m.getRole(), "content", m.getContent()));}
         history.add(Map.of("role", "user", "content", augmentedPrompt));
 
-        // history.add(Map.of("prompt", prompt));
-        String response = callLLM(history);
-        saveMessage(convo, Role.USER, prompt);
-        saveMessage(convo, Role.ASSISTANT, response);
+
+        // String response = callLLM(history);
+        // saveMessage(convo, Role.USER, prompt);
+        // saveMessage(convo, Role.ASSISTANT, response);
 
         // package and return result
-        ChatResponse result = new ChatResponse();
-        result.guestID = guest.getGuestID();
-        result.response = response;
-        return result;
+        // ChatResponse result = new ChatResponse();
+        // result.guestID = guest.getGuestID();
+        // result.response = response;
+
+        StringBuilder fullResponse = new StringBuilder();
+        Conversations finalConvo = convo;
+
+        return callLLM(history)
+            .doOnNext(fullResponse::append)
+            .doOnComplete(() -> {
+                saveMessage(finalConvo, Role.USER, prompt);
+                saveMessage(finalConvo, Role.ASSISTANT, fullResponse.toString());
+            });
+
+        //return result;
     }
 
     /**
@@ -140,16 +152,20 @@ public class ChatService {
      * @param history is comprised of the last 5 messages for conversational memory
      * @return the LLM's String generation
      */
-    private String callLLM(List<Map<String, String>> history) {
+    private Flux<String> callLLM(List<Map<String, String>> history) {
+        // Generation response = client.post()
+        //     .uri("/generate")
+        //     .bodyValue(Map.of("messages", history))
+        //     .retrieve()
+        //     .bodyToMono(Generation.class)
+        //     .block();
 
-        Generation response = client.post()
+        // return response.generation;
+        return client.post()
             .uri("/generate")
             .bodyValue(Map.of("messages", history))
             .retrieve()
-            .bodyToMono(Generation.class)
-            .block();
-
-        return response.generation;
+            .bodyToFlux(String.class);
 
     }
 
@@ -160,6 +176,7 @@ public class ChatService {
      * 
      * ADD FEATURE TO CLEAR DOCUMENTS AS WELL
      */
+    @Transactional
     @Scheduled(fixedRate = 2, timeUnit = TimeUnit.DAYS)
     public void clearStaleGuests() {
 

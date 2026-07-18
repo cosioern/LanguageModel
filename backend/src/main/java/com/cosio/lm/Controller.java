@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import reactor.core.publisher.Flux;
 
 
 @RestController
@@ -60,21 +61,23 @@ public class Controller {
      * @return
      */
     @PostMapping("/generate")
-    public String generate(@RequestParam(value="prompt") String prompt, 
+    public Flux<String> generate(@RequestParam(value="prompt") String prompt, 
         @CookieValue(value="guestID", required = false) UUID guestID,
         HttpServletResponse response) {
 
-        ChatResponse result = chatService.generate(prompt, guestID);
-
-        // if (guestID == null || !guestID.equals(result.guestID)) {
-        // Refresh or set cookie's lifespan for Guest
-        Cookie cookie = new Cookie("guestID", result.guestID.toString());
+        Guest guest = chatService.resolveGuest(guestID);
+        Cookie cookie = new Cookie("guestID", guest.getGuestID().toString());
         cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
         cookie.setPath("/");
         response.addCookie(cookie);
+
+        Flux<String> result = chatService.generate(prompt, guest);
+
+        // if (guestID == null || !guestID.equals(result.guestID)) {
+        // Refresh or set cookie's lifespan for Guest
         // }
         
-        return result.response;
+        return result;
     } 
 
     /**

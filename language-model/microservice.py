@@ -1,9 +1,11 @@
 import os
 from io import BytesIO
+import time
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from threading import Thread
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 from peft import PeftModel
 import torch
 
@@ -46,13 +48,6 @@ if not MOCK_MODE:
 
     # load model for chunk encoding
     encoder_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    # system_prompt = (
-    #         "You are PIE, a real estate market analyst. "
-    #         "Provide concise, investment-focused commentary. "
-    #         "Base reasoning on supply, demand, interest rates, demographics, and valuation. "
-    #         "Avoid speculation and avoid making up specific local statistics. "
-    #         "Prioritize causal explanations and investment implications."
-    # )
 
 # Expose REST Endpoint, Receive the Prompt as JSON
 """
@@ -64,41 +59,66 @@ Arguments:
 def generate(req: ChatRequest):
     if MOCK_MODE:
         response = "This is a mock response for the prompt: " + req.messages[-1].content
+        def token_generator():
+            for word in response.split(" "):
+                yield word + " "
+                time.sleep(0.05)
 
     else:
-        # messages = [
-        # {"role": "system", "content": system_prompt},
-        # {"role": "user", "content": req.prompt}
-        # ]
-        # messages = r.messages
-
         # Tokenize Prompt
         text = tokenizer.apply_chat_template(
-        # messages,
-        req.messages,
-        tokenize=False,
-        add_generation_prompt=True
+            # messages,
+            req.messages,
+            tokenize=False,
+            add_generation_prompt=True
         )
         model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
-        # Run Generator
-        generated_ids = model.generate(
-        **model_inputs,
-        max_new_tokens=512,
-        temperature=0.7,
-        top_p=0.9,
-        # top_k=20,
-        # repetition_penalty=1.1,
-        do_sample=True,
+        # token streamer
+        streamer = TextIteratorStreamer(
+            tokenizer,
+            skip_prompt=True,
+            skip_special_tokens=True,
         )
-        generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
-        # Decode Output
-        response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-    # Return Generation as JSON
-    return {"generation":response}
+        # call LLM on a thread to prevent blocking
+        thread = Thread(
+            target=model.generate,
+            kwargs=dict(
+                **model_inputs,
+                max_new_tokens= 512,
+                temperature= 0.7,
+                top_p= 0.9,
+                do_sample= True,
+                streamer= streamer,
+            )
+        )
+
+        thread.start()
+
+        def token_generator():
+            for token in streamer:
+                yield token
+            thread.join()
+        # Run Generator
+        # generated_ids = model.generate(
+        #     **model_inputs,
+        #     max_new_tokens=512,
+        #     temperature=0.7,
+        #     top_p=0.9,
+        #     # top_k=20,
+        #     # repetition_penalty=1.1,
+        #     do_sample=True,
+        #     streamer = streamer,
+        # )
+        # generated_ids = [
+        #     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        # ]
+        # # Decode Output
+        # response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+    # return {"generation":response}
+    return StreamingResponse(token_generator(), media_type="text/plain")
 
 """
 Endpoint handling document embedding
@@ -110,9 +130,6 @@ Return:
 @app.post("/embedDocument")
 async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
     contents = await file.read()
-
-    # if not file.filename.endswith((".pdf", ".txt", ".docx")):
-    #     raise HTTPException(status_code=400, detail="Unsupported Data Type")
     
     suffix = Path(file.filename).suffix.lower()
     doc = None
