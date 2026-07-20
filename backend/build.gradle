@@ -29,6 +29,12 @@ dependencies {
 	implementation 'org.hibernate.orm:hibernate-vector:7.4.1.Final'
 	implementation 'org.springframework.security:spring-security-crypto:6.5.1'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {

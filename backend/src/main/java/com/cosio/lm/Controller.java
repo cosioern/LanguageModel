@@ -16,7 +16,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import reactor.core.publisher.Flux;
 
-
 @RestController
 @RequestMapping("/")
 public class Controller {
@@ -24,14 +23,15 @@ public class Controller {
     /** used to handle mesasges / conversations and handle calls to LLM endpoints*/
     private final ChatService chatService;
     /** used to perform RAG pipeline-relevant services */
-    private final EmbeddingService embeddingService;
-
-    
+    private final EmbeddingService embeddingService; 
+    /** used to perform user-relevant services */
+    private final AccountService accountService;
 
     // Constructor auto-injected by Spring
-    public Controller(ChatService chat, EmbeddingService embeddingService) {
+    public Controller(ChatService chat, EmbeddingService embeddingService, AccountService accountService) {
         this.chatService = chat;
         this.embeddingService = embeddingService;
+        this.accountService = accountService;
     }
 
     /**
@@ -47,11 +47,28 @@ public class Controller {
      * @return
      */
     @GetMapping("/load")
-    public List<ChatMessage> loadConversation(@CookieValue(value = "guestID", required=false) UUID guestID, HttpServletResponse response) {
+    public List<ChatMessage> loadConversation(@CookieValue(value = "guestID", required=false) UUID guestID, 
+    @CookieValue(value = "token", required = false) String token, HttpServletResponse response) {
+        
+        // load for an authen user
+        User user = accountService.validateToken(token);
+        if (user != null) { 
+            Cookie cookie = new Cookie("token", token);
+            cookie.setPath("/");
+            cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+            
+            return chatService.getHistory(user); 
+        }
+
+        // istead, load for a guest
         if (guestID == null) return List.of();
         Guest g = chatService.findGuest(guestID);
-        // if (g == null) return List.of();    
-
+        Cookie cookie = new Cookie("guestID", guestID.toString());
+        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+        cookie.setPath("/");
+        response.addCookie(cookie);
         return chatService.getHistory(g);
     }
 
@@ -69,8 +86,23 @@ public class Controller {
     @PostMapping("/generate")
     public Flux<String> generate(@RequestParam(value="prompt") String prompt, 
         @CookieValue(value="guestID", required = false) UUID guestID,
+        @CookieValue(value="token", required = false) String token,
         HttpServletResponse response) {
 
+        // generation pathway for an authen user
+        User user = accountService.validateToken(token);
+        if (user != null) { 
+           Cookie cookie = new Cookie("token", token);
+           cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+           cookie.setPath("/");
+           cookie.setHttpOnly(true);
+           response.addCookie(cookie);
+
+           Flux<String> result = chatService.generate(prompt, user);
+           return result;
+        }
+
+        // generation pathway for a guest
         Guest guest = chatService.resolveGuest(guestID);
         Cookie cookie = new Cookie("guestID", guest.getID().toString());
         cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
@@ -78,11 +110,6 @@ public class Controller {
         response.addCookie(cookie);
 
         Flux<String> result = chatService.generate(prompt, guest);
-
-        // if (guestID == null || !guestID.equals(result.guestID)) {
-        // Refresh or set cookie's lifespan for Guest
-        // }
-        
         return result;
     } 
 
@@ -95,8 +122,21 @@ public class Controller {
      */
     @PostMapping("/embedDocument")
     public void embedDocument(@RequestParam(value="document") MultipartFile file, 
-    @CookieValue(value = "guestID", required = false) UUID guestID, 
+    @CookieValue(value = "guestID", required = false) UUID guestID,
+    @CookieValue(value = "token", required = false) String token,
     HttpServletResponse response) {
+
+        User user = accountService.validateToken(token);
+        if (user != null) { 
+            Cookie cookie = new Cookie("token", token);
+            cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+            cookie.setPath("/");
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+
+            embeddingService.embedDocument(file, user);
+            return; 
+        }
 
         Guest guest = chatService.resolveGuest(guestID);
         Cookie cookie = new Cookie("guestID", guest.getID().toString());
@@ -107,6 +147,73 @@ public class Controller {
         embeddingService.embedDocument(file, guest);
     
         return;
+    }
+
+    /**
+     * User account registration endpoint.
+     * 
+     * @param username  requested by user
+     * @param email     to verify account
+     * @param password  to restrict access to account
+     * @param response  to convey success/failure
+     */
+    @PostMapping("/register")
+    public void register(@RequestParam(value="username") String username, 
+    @RequestParam(value="email") String email, 
+    @RequestParam(value="password") String password,
+    HttpServletResponse response) {
+
+        UUID token = accountService.createUser(username, email, password);
+        // failure to send email => user removed, send failure status code
+        if (token == null) {response.setStatus(401);}
+    }
+
+    /**
+     * User login endpoint.
+     * 
+     * @param username to identify user
+     * @param password to authenticate login
+     * @param response to send session cookie
+     */
+    @PostMapping("/login")
+    public void login(@RequestParam(value="username") String username, 
+    @RequestParam(value="password") String password, 
+    HttpServletResponse response) {
+
+        String token = accountService.authenticate(username, password);
+
+        if (token == null) {
+            response.setStatus(401);
+            return;
+        }
+
+        Cookie c = new Cookie("token", token);
+        c.setMaxAge((int)Duration.ofDays(2).toSeconds());
+        c.setPath("/");
+        c.setHttpOnly(true);
+
+        response.addCookie(c);
+
+    }
+
+    /**
+     * New user verification endpoint.
+     * 
+     * @param verificationToken verifies email by matching with User's value held in persistence
+     * @param response to send session cookie
+     */
+    @GetMapping("/verify")
+    public void verify(@RequestParam(value="token") UUID verificationToken, HttpServletResponse response) {
+
+        // apply session token
+        String token = accountService.verifyUser(verificationToken);
+        if (token == null) {response.setStatus(401); return;}
+        Cookie cookie = new Cookie("token", token);
+        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        response.addCookie(cookie);
     }
 
 }

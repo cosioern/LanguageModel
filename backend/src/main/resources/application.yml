@@ -1,6 +1,18 @@
 spring:
   application:
     name: lm
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: cosius@gmail.com
+    password: drmu bgba rnqj qmwg
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls: 
+            enable: true
+    
 
   datasource:
     url: jdbc:postgresql://localhost:5432/chatbot_db
@@ -15,4 +27,6 @@ spring:
 server:
   port: 8080
   
-
+# move to an env variable before deploying
+jwt:
+  secret: JbjvLyK2xnoudn6Z4X0rLhl4Yuxi9bOPdd6B55yvF68=
