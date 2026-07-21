@@ -62,7 +62,11 @@ public class AccountService {
      */
     public UUID createUser(String username, String email, String password)  {
         
-        // SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtSecret));
+        // replace with custom exceptions?
+        if (userRepo.findByUsername(username).isPresent() || userRepo.findByEmail(email).isPresent()) {
+            return null;
+        }
+
         String hash = encoder.encode(password);
         User user = new User(username, email, hash);
         userRepo.save(user);
@@ -148,11 +152,11 @@ public class AccountService {
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(email);
         mail.setSubject("Verification Link");
-        mail.setText("Click to verify: https://localhost:5173/verify?token=" + verificationToken);
+        mail.setText("Click to verify: http://localhost:5173/verify?token=" + verificationToken);
         
         // failing to send message goes up call chain and undoes user
         try {mailSender.send(mail);} 
-        catch (MailException e) {return false;}
+        catch (MailException e) {e.printStackTrace(); return false;}
 
        return true;
     }

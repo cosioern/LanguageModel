@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -70,7 +71,10 @@ public class LmApplication {
         return new CorsFilter(source);
     }
 	
-
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     static class VectorDataSource extends DelegatingDataSource {
         public VectorDataSource(DataSource targDataSource) {
@@ -83,6 +87,7 @@ public class LmApplication {
             PGvector.addVectorType(conn);
             return conn;
         }
+
     }
 
 }

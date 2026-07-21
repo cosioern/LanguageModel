@@ -1,32 +1,46 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react"
+import { Routes, Route } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import "./App.css";
-
-import LandingPage from "./components/LandingPage";
-import ChatPage from "./components/ChatPage";
+import LandingPage from "./components/LandingPage"
+import ChatPage from "./components/ChatPage"
+import Register from "./components/Register"
+import Login from "./components/Login"
+import Verify from "./components/Verify"
 
 function App() {
-    const [started, setStarted] = useState(false);
     const [initialPrompt, setInitialPrompt] = useState("");
     const [chatHistory, setChatHistory] = useState([]);
+    const navigate = useNavigate();
 
+    // 
     function handleInitialPrompt(text) {
         setInitialPrompt(text);
-        setStarted(true);
+        navigate("/chat");
+        // setStarted(true);
     }
-
+    // check for chat history
     useEffect(() => {
         fetch(`http://localhost:8080/load`, {credentials:"include"})
             .then(res => res.json())
             .then(data => setChatHistory(data))
     }, []);
-
     // if cookie found send chat history to ChatPage
-    if (chatHistory.length > 0)
-        return <ChatPage chatHistory={chatHistory}/>;
+    useEffect(() => {
+        if (chatHistory.length > 0) {
+            navigate("/chat");
+        }
+    }, [chatHistory]);
 
-    return started
-        ? <ChatPage initialPrompt={initialPrompt}/>
-        : <LandingPage onSubmit={handleInitialPrompt} />;
+   return ( 
+        <Routes>
+            <Route path="/" element={<LandingPage onSubmit={handleInitialPrompt}/>} />
+            <Route path="/chat" element={<ChatPage initialPrompt={initialPrompt} chatHistory={chatHistory} />} />
+            <Route path="/register" element={<Register />}/>
+            <Route path="/login" element={<Login />} />
+            <Route path="/verify" element={<Verify />} />
+        </Routes>
+    );
 }
 
 export default App;
