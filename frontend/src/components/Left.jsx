@@ -7,7 +7,7 @@ function Left({isLoggedIn}) {
     return (
         <div className="sideLeft">
             <h3>Powered by Bernie</h3>
-            <button onClick={() => navigate("/profile")} className={`profile ${isLoggedIn ? "logged-in" : ""}`} title="Profile">
+            <button onClick={() => navigate((isLoggedIn ? "/profile" : "/register"))} className={`profile ${isLoggedIn ? "logged-in" : ""}`} title="Profile">
                 <img src="/profile.png" alt="Profile" />
             </button>
         </div>
@@ -15,4 +15,3 @@ function Left({isLoggedIn}) {
 }
 
 export default Left;
-

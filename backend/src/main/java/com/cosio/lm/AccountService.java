@@ -86,6 +86,8 @@ public class AccountService {
 
     /**
      * Authenticate a user.
+     * User must be verified (via email link) before they are
+     * granted access at login.
      * 
      * @param username  used to identify
      * @param passoword compared against hash stored in persistence
@@ -93,16 +95,14 @@ public class AccountService {
      */
     public String authenticate(String username, String passoword) {
 
-        // SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtSecret));
-
+        // find user
         Optional<User> user = userRepo.findByUsername(username);
-        if (user.isEmpty())
-            return null;
-
-        if (!encoder.matches(passoword, user.get().getPassword())) {
-            return null;
-        }
-        
+        if (user.isEmpty()) { return null; }
+        // user must be verified via email link before access is granted
+        if (!user.get().isVerified()) { return null; }
+        // check if given password, after encoding, matches what's held in persistence
+        if (!encoder.matches(passoword, user.get().getPassword())) { return null; }
+        // build session token based on user UUID 
         String token = Jwts.builder()
             .subject(user.get().getID().toString())
             .issuedAt(new Date())
@@ -190,20 +190,17 @@ public class AccountService {
         return token;
     }
 
-    // return account details
+    /**
+     * Returns account details of User.
+     * 
+     * @param id to find user
+     * @return   mapped user datails
+     */
     public Map<String, String> accountDetails(UUID id) {
         Optional<User> user = userRepo.findById(id);
         if (user.isEmpty()) {return null;}
 
-        // String token = Jwts.builder()
-        //     .subject(user.get().getID().toString())
-        //     .issuedAt(new Date())
-        //     .expiration(new Date(System.currentTimeMillis() + Duration.ofDays(2).toMillis()))
-        //     .signWith(secretKey)
-        //     .compact();
-
         Map<String, String> details = Map.of(
-            // "token", token,
             "username", user.get().getUsername(), 
             "email", user.get().getEmail(), 
             "birthday", user.get().getBirthday(), 

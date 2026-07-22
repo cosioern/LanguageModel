@@ -143,10 +143,10 @@ for i, training_set in enumerate(configurations):
     # model.config.torch_dtype = torch.float16
 
     trainer = SFTTrainer(
-    model=model,
-    train_dataset = data_set,
-    peft_config=peft_config,
-    args=training_set,
+        model=model,
+        train_dataset = data_set,
+        peft_config=peft_config,
+        args=training_set,
     )
 
 trainer.args.output_dir = output_dir

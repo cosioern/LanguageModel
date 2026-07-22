@@ -55,12 +55,7 @@ public class Controller {
         // load for an authen user
         User user = accountService.validateToken(token);
         if (user != null) { 
-            Cookie cookie = new Cookie("token", token);
-            cookie.setPath("/");
-            cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
-            
+            response.addCookie(generateCookie(token));
             return chatService.getHistory(user); 
         }
 
@@ -95,11 +90,7 @@ public class Controller {
         // generation pathway for an authen user
         User user = accountService.validateToken(token);
         if (user != null) { 
-           Cookie cookie = new Cookie("token", token);
-           cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
-           cookie.setPath("/");
-           cookie.setHttpOnly(true);
-           response.addCookie(cookie);
+           response.addCookie(generateCookie(token));
 
            Flux<String> result = chatService.generate(prompt, user);
            return result;
@@ -131,12 +122,7 @@ public class Controller {
 
         User user = accountService.validateToken(token);
         if (user != null) { 
-            Cookie cookie = new Cookie("token", token);
-            cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
-
+            response.addCookie(generateCookie(token));
             embeddingService.embedDocument(file, user);
             return; 
         }
@@ -192,10 +178,7 @@ public class Controller {
             return;
         }
 
-        Cookie c = new Cookie("token", token);
-        c.setMaxAge((int)Duration.ofDays(2).toSeconds());
-        c.setPath("/");
-        c.setHttpOnly(true);
+        Cookie c = generateCookie(token);
 
         response.addCookie(c);
 
@@ -213,25 +196,26 @@ public class Controller {
         // apply session token
         String token = accountService.verifyUser(verificationToken);
         if (token == null) {response.setStatus(401); return;}
-        Cookie cookie = new Cookie("token", token);
-        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
 
-        response.addCookie(cookie);
+        response.addCookie(generateCookie(token));
     }
     
-    // change UUID token to String token?
+    /**
+     * Endpoint for handing over account details.
+     * Details are for display on frontend Profile page.
+     * 
+     * @param token     is the session identifier JWT token
+     * @param response  contains the cookie
+     * @return          mapping of account details
+     */
     @GetMapping("/profile")
     public Map<String, String> profile(@CookieValue(value="token", required=true) String token, HttpServletResponse response) {
-        // return User's name, username, email, and birthday for view
-
         User user = accountService.validateToken(token);
         if (user == null) return null;
 
         Map<String, String> details = accountService.accountDetails(user.getID());
         if (details == null) {
-            response.setStatus(404);
+            response.setStatus(401);
             return null;
         }
                 
@@ -248,8 +232,15 @@ public class Controller {
         return cookie;
     }
 
+    /**
+     * Endpoint to determine if a client is a User or a Guest.
+     * Used to determine where certain buttons, like Profile or SignUp, redirect.
+     * 
+     * @param token     JWT token to act as user session identifier
+     * @return          true if client is a user, false otherwise
+     */
     @GetMapping("/authStatus")
-    public boolean authStatus(@CookieValue(value="token", required = false) String token, HttpServletResponse response) {
+    public boolean authStatus(@CookieValue(value="token", required = false) String token) {
 
         if (token != null && accountService.validateToken(token) != null) {
             // response.addCookie(generateCookie(token));

@@ -65,7 +65,7 @@ Ways to Reduce Temporal Staleness:
 
 ### 5. Adjusting Generation Parameters
 
-## Setting Up The Environment
+## Setting Up The Environment / Database
 I recommend setting up a Conda environment like so:
  - On Windows / MacOS: conda create -n "Env Name" python=3.11
  - pip install pymupdf transformers datasets pef trl accelerate bitsandbytes
@@ -80,10 +80,16 @@ I recommend setting up a Conda environment like so:
  - This python version is the newest that will most reliably work with the necessary dependencies.
  - This torch build is geared towards allowing PyTorch to make use of CUDA cores on supported NVidia GPUs.
 
+This repository is set up with a Postrges database. Postgres 18 does not come with </n>
+preinstalled binaries to enable it to perform vector search / save. You'll have to instll </n>
+those. I got mine from [text](https://github.com/andreiramani/pgvector_pgsql_windows). <n>
+Create a db named chatbot_db. To use vectors with it: CREATE EXTENSION IF NOT EXISTS vector;
+Spring Boot and NodeJS are used with standard installs.
+
 Training a Qwen 2.5 3B with 1.5 million tokens at 2-3 epochs.
 QLoRA training.
 
-## Create the Following Folders:
+## You May Need to Create the Following Folders:
 /Reports        to hold pdfs of market reports or analyst commentary</n>
 /Raw directory  to hold files of scraped text corresponding to /Reports
 /TrainingSet    to hold formatted jsonl file used in training

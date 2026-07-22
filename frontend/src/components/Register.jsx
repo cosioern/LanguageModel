@@ -32,7 +32,7 @@ function Register() {
         });
 
         if (res.ok) {
-            setStatus("Check your email to verify your account");
+            setStatus("Check your email to verify your account and close this tab.");
         } else {
             setStatus("Registration failed. Please try again.");
         }

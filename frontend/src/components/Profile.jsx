@@ -9,7 +9,7 @@ function Profile() {
     const [name, setName] = useState("");
 
     useEffect(() => {
-        fetch(`http://localhost:8080/account`, {
+        fetch(`http://localhost:8080/profile`, {
             // method: "GET",
             credentials: "include",
             headers: {"Content-type": "application/x-www-form-urlencoded"},

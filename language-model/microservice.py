@@ -42,7 +42,7 @@ if not MOCK_MODE:
     )
 
     # laod adapters, merge model for efficiency, and load tokenizer
-    model = PeftModel.from_pretrained(base_model, "./Adapters2/Set_0")
+    model = PeftModel.from_pretrained(base_model, "./Adapters2/Set_1")
     model = model.merge_and_unload()
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-3B-Instruct")
 
