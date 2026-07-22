@@ -5,6 +5,9 @@ function Register() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
+    const [birthDate, setBirthDate] = useState("");
+
     const [status, setStatus] = useState(null);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -18,6 +21,8 @@ function Register() {
         formData.append("username", username);
         formData.append("email", email);
         formData.append("password", password);
+        formData.append("name", name);
+        formData.append("birthDate", birthDate);
 
         const res = await fetch(`http://localhost:8080/register`, {
             method: "POST",
@@ -37,7 +42,7 @@ function Register() {
     return (
         <div className="register-page">
             <form className="register-card" onSubmit={handleSubmit}>
-                <h1>First Time Here?</h1>
+                <h1>Wanna chat?</h1>
                 <p>Create an Account</p>
 
                 <input 
@@ -46,12 +51,31 @@ function Register() {
                     placeholder="Username">
 
                 </input>
-                
+
+                <input
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="Name">
+
+                </input>
+
                 <input
                     type="email"
                     value={email} 
                     onChange={e => setEmail(e.target.value)} 
                     placeholder="Email">
+                </input>
+
+                <input
+                    type="date"
+                    name="birthDate"
+                    value={birthDate}
+                    onChange={e => setBirthDate(e.target.value)}
+                    autoComplete="bday"
+                    // placeholder="birthDate"
+                    title="Date of Birth"
+                    >
+
                 </input>
 
                 <input

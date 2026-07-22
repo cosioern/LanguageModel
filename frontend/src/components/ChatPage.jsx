@@ -20,6 +20,7 @@ function ChatPage({initialPrompt, chatHistory}) {
     const fileInputRef = useRef(null);
     const [toast, setToast] = useState(null);
     const [isStreaming, setIsStreaming] = useState(false);
+    const [isLogginIn, setLoggedIn] = useState(false);
 
     // initial  api call, seamless transition between LandingPage and ChatPage
     useEffect(() => {
@@ -61,7 +62,17 @@ function ChatPage({initialPrompt, chatHistory}) {
         init();
     }, []);
     
-    
+    useEffect(() => {
+        async function checkStatus() {
+            const res = await fetch(`http://localhost:8080/authStatus`, {
+                credentials: "include"
+            });
+            const isLoggedIn = await res.json();
+            setLoggedIn(isLoggedIn);
+        }
+        checkStatus();
+    }, []);
+
     // scrolls down the page as new messages are added, but only when page is full
     useEffect(() => {
         const bottomEl = bottomRef.current;
@@ -196,7 +207,7 @@ function ChatPage({initialPrompt, chatHistory}) {
     // assembled html page
     return (
         <div className="page">
-            <Left />
+            <Left isLoggedIn={isLogginIn} />
             <Middle 
                 messages={messages}
                 prompt={prompt}

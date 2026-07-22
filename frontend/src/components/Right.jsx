@@ -1,5 +1,5 @@
 import "./Right.css"
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 
 function Right() {
     const navigate = useNavigate();

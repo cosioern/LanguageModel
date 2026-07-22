@@ -7,6 +7,7 @@ import ChatPage from "./components/ChatPage"
 import Register from "./components/Register"
 import Login from "./components/Login"
 import Verify from "./components/Verify"
+import Profile from "./components/Profile"
 
 function App() {
     const [initialPrompt, setInitialPrompt] = useState("");
@@ -39,6 +40,7 @@ function App() {
             <Route path="/register" element={<Register />}/>
             <Route path="/login" element={<Login />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path ="/profile" element={<Profile />} />
         </Routes>
     );
 }

@@ -8,8 +8,10 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,9 +60,11 @@ public class AccountService {
      * @param username  requested by user
      * @param email     requiested to be used to verify account
      * @param password  requested to authenticate access
+     * @param birthDate user's birthday
+     * @param name      user's name
      * @return          a UUID to be compared against token in link
      */
-    public UUID createUser(String username, String email, String password)  {
+    public UUID createUser(String username, String email, String password,LocalDate birthDate, String name)  {
         
         // replace with custom exceptions?
         if (userRepo.findByUsername(username).isPresent() || userRepo.findByEmail(email).isPresent()) {
@@ -68,7 +72,7 @@ public class AccountService {
         }
 
         String hash = encoder.encode(password);
-        User user = new User(username, email, hash);
+        User user = new User(username, email, hash, name, birthDate);
         userRepo.save(user);
 
         // error sending link, undo user creation
@@ -184,6 +188,29 @@ public class AccountService {
             .compact();
 
         return token;
+    }
+
+    // return account details
+    public Map<String, String> accountDetails(UUID id) {
+        Optional<User> user = userRepo.findById(id);
+        if (user.isEmpty()) {return null;}
+
+        // String token = Jwts.builder()
+        //     .subject(user.get().getID().toString())
+        //     .issuedAt(new Date())
+        //     .expiration(new Date(System.currentTimeMillis() + Duration.ofDays(2).toMillis()))
+        //     .signWith(secretKey)
+        //     .compact();
+
+        Map<String, String> details = Map.of(
+            // "token", token,
+            "username", user.get().getUsername(), 
+            "email", user.get().getEmail(), 
+            "birthday", user.get().getBirthday(), 
+            "name", user.get().getName()
+        );
+
+        return details;
     }
 
 }

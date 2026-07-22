@@ -1,5 +1,6 @@
 package com.cosio.lm;
 
+import java.time.LocalDate;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,12 +26,20 @@ public class User extends Account{
     @Column(nullable = false)
     private boolean verified;
 
+    @Column(nullable = false, updatable = true)
+    private String name;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDate birthDay;
+
     protected User() {}
 
-    public User(String username, String email, String hash) {
+    public User(String username, String email, String hash, String name, LocalDate birthDate) {
         this.username = username;
         this.email = email;
         this.hashedPassword = hash;
+        this.name = name;
+        this.birthDay = birthDate;
 
         verificationToken = UUID.randomUUID();
         verified = false;
@@ -41,6 +50,10 @@ public class User extends Account{
     public String getEmail() {return email;}
 
     public String getPassword() {return hashedPassword;}
+
+    public String getName() {return name;}
+
+    public String getBirthday() {return birthDay.toString();}
 
     public boolean compareToken(UUID token) {return verificationToken.equals(token);}
 

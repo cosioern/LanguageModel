@@ -1,7 +1,9 @@
 package com.cosio.lm;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.web.bind.annotation.CookieValue;
@@ -78,9 +80,10 @@ public class Controller {
      * 
      * Calls {@link ChatService#generate(String, UUID)}
      * 
-     * @param prompt to be sent to the LLM
-     * @param guestID is a cookie that identifies the user
-     * @param response allows for cookies to be sent
+     * @param prompt    to be sent to the LLM
+     * @param guestID   is a cookie that identifies the user
+     * @param token     JWT token to act as user/session identifier
+     * @param response  allows for cookies to be sent
      * @return
      */
     @PostMapping("/generate")
@@ -161,9 +164,11 @@ public class Controller {
     public void register(@RequestParam(value="username") String username, 
     @RequestParam(value="email") String email, 
     @RequestParam(value="password") String password,
+    @RequestParam(value="name") String name,
+    @RequestParam(value="birthDate") LocalDate birthDate,
     HttpServletResponse response) {
 
-        UUID token = accountService.createUser(username, email, password);
+        UUID token = accountService.createUser(username, email, password, birthDate, name);
         // failure to send email => user removed, send failure status code
         if (token == null) {response.setStatus(401);}
     }
@@ -216,4 +221,42 @@ public class Controller {
         response.addCookie(cookie);
     }
     
+    // change UUID token to String token?
+    @GetMapping("/profile")
+    public Map<String, String> profile(@CookieValue(value="token", required=true) String token, HttpServletResponse response) {
+        // return User's name, username, email, and birthday for view
+
+        User user = accountService.validateToken(token);
+        if (user == null) return null;
+
+        Map<String, String> details = accountService.accountDetails(user.getID());
+        if (details == null) {
+            response.setStatus(404);
+            return null;
+        }
+                
+        response.addCookie(generateCookie(token));
+
+        return details;
+    }
+
+    private Cookie generateCookie(String token) {
+        Cookie cookie = new Cookie("token", token);
+        cookie.setPath("/");
+        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+        cookie.setHttpOnly(true);
+        return cookie;
+    }
+
+    @GetMapping("/authStatus")
+    public boolean authStatus(@CookieValue(value="token", required = false) String token, HttpServletResponse response) {
+
+        if (token != null && accountService.validateToken(token) != null) {
+            // response.addCookie(generateCookie(token));
+            return true;
+        }
+
+        return false;
+    }
+
 }

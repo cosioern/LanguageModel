@@ -7,6 +7,20 @@ function LandingPage({onSubmit}) {
     const [prompt, setPrompt] = useState("");
     const textareaRef = useRef(null);
     const baseHeightRef = useRef(0);
+    const [isLogginIn, setLoggedIn] = useState(false);
+
+
+    // checks if a user is logged in (accents profile pic button)
+    useEffect(() => {
+        async function checkStatus() {
+            const res = await fetch(`http://localhost:8080/authStatus`, {
+                credentials: "include"
+            });
+            const isLoggedIn = await res.json();
+            setLoggedIn(isLoggedIn);
+        }
+        checkStatus();
+    }, []);
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -31,7 +45,7 @@ function LandingPage({onSubmit}) {
     
     return (
     <div className="page">
-        <Left />
+        <Left isLoggedIn={isLogginIn}/>
         <div className="landing-center">
             <p>Lay It On Me Mama!</p>
             <textarea
