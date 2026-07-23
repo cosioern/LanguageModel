@@ -10,26 +10,26 @@ import jakarta.validation.constraints.Email;
 // @Table(name="app_user")
 public class User extends Account{
     
-    @Column(nullable = false, updatable = true, unique = true)
+    @Column(nullable = true, updatable = true, unique = true)
     private String username;
 
     @Email
-    @Column(nullable = false, updatable = true, unique = true)
+    @Column(nullable = true, updatable = true, unique = true)
     private String email;
 
-    @Column(nullable = false, updatable = true)
+    @Column(nullable = true, updatable = true)
     private String hashedPassword; 
     
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = true, updatable = false)
     private UUID verificationToken;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private boolean verified;
 
-    @Column(nullable = false, updatable = true)
+    @Column(nullable = true, updatable = true)
     private String name;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = true, updatable = false)
     private LocalDate birthDay;
 
     protected User() {}

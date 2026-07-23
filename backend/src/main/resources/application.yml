@@ -4,8 +4,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: cosiusai@gmail.com
-    password: "drmubgbarnqjqmwg"
+    username: ${EMAIL}
+    password: ${SMTP_PASSWORD} #"drmubgbarnqjqmwg"
     properties:
       mail:
         smtp:
@@ -16,7 +16,7 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/chatbot_db
-    username: ernestocosio
+    username: ${DB_USER}
     # password: your_password
     
   jpa:
@@ -29,4 +29,4 @@ server:
   
 # move to an env variable before deploying
 jwt:
-  secret: JbjvLyK2xnoudn6Z4X0rLhl4Yuxi9bOPdd6B55yvF68=
+  secret:  ${JWT_KEY} #JbjvLyK2xnoudn6Z4X0rLhl4Yuxi9bOPdd6B55yvF68=
