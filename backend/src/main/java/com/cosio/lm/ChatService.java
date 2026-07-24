@@ -43,7 +43,7 @@ public class ChatService {
     /** used to search through Accounts */
     private final AccountRepository accountRepo;
 
-    /** system prompt, to be shipped with each request to LLM */
+    /** system prompt, to be shipped with each request to LM */
     private final String system = "You are PIE, a real estate market analyst."
         + "Provide concise, investment-focused commentary." 
         + "Base reasoning on supply, demand, interest rates, demographics, and valuation."
@@ -68,7 +68,7 @@ public class ChatService {
      * model, and saves the prompt + response to the proper conversation belonging to the guest
      * in persistence.
      * 
-     * @param prompt is the user input to use to direct an llm generation
+     * @param prompt is the user input to use to direct an lm generation
      * @param guestID identifies the user for correct conversation / message handling
      * @return
      */
@@ -81,7 +81,7 @@ public class ChatService {
         List<Messages> messages = msgRepo.findTop5ByConversationsOrderByCreatedAtDesc(convo);
         messages = messages.reversed();
 
-        // similarity search + add context to LLM prompt
+        // similarity search + add context to lm prompt
         float[] promptVector = embeddingService.embedPrompt(prompt);
         List<String> context = embeddingService.similaritySearch(promptVector, account);
         String augmentedPrompt = context.isEmpty() ? prompt : "Context:\n" + String.join("\n\n", context) + "\n\nQuestion: " + prompt;
@@ -92,16 +92,7 @@ public class ChatService {
         for (Messages m : messages) {history.add(Map.of("role", m.getRole(), "content", m.getContent()));}
         history.add(Map.of("role", "user", "content", augmentedPrompt));
 
-
-        // String response = callLLM(history);
-        // saveMessage(convo, Role.USER, prompt);
-        // saveMessage(convo, Role.ASSISTANT, response);
-
-        // package and return result
-        // ChatResponse result = new ChatResponse();
-        // result.guestID = guest.getGuestID();
-        // result.response = response;
-
+        // pipeline to call LM microservice
         StringBuilder fullResponse = new StringBuilder();
         Conversations finalConvo = convo;
 
@@ -154,7 +145,7 @@ public class ChatService {
      * Context length (history) can be increased by changing findTopXConversatinos... above
      * 
      * @param history is comprised of the last 5 messages for conversational memory
-     * @return the LLM's String generation
+     * @return the LM's String generation
      */
     private Flux<String> callLLM(List<Map<String, String>> history) {
         // return response.generation;

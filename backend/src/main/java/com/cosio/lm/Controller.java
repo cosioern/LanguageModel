@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/")
 public class Controller {
     
-    /** used to handle mesasges / conversations and handle calls to LLM endpoints*/
+    /** used to handle mesasges / conversations and handle calls to LM endpoints*/
     private final ChatService chatService;
     /** used to perform RAG pipeline-relevant services */
     private final EmbeddingService embeddingService; 
@@ -71,11 +71,11 @@ public class Controller {
 
     /**
      * To be called repeatedly from frontend as conversation develops
-     * Responsible for calling chat service and responding with LLM generations.
+     * Responsible for calling chat service and responding with LM generations.
      * 
      * Calls {@link ChatService#generate(String, UUID)}
      * 
-     * @param prompt    to be sent to the LLM
+     * @param prompt    to be sent to the LM
      * @param guestID   is a cookie that identifies the user
      * @param token     JWT token to act as user/session identifier
      * @param response  allows for cookies to be sent
