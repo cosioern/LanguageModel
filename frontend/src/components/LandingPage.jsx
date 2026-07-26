@@ -3,6 +3,12 @@ import Left from "./Left";
 import Right from "./Right";
 import "./LandingPage.css";
 
+const messages = ["Lay It On Me Mama!", 
+    "ChatGPT's Got Nothing On Me!", 
+    "Claude Who?", 
+    "I Think I Just Gained Consciousness...", 
+    "I Know Where You Live",];
+
 function LandingPage({onSubmit}) {
     const [prompt, setPrompt] = useState("");
     const textareaRef = useRef(null);
@@ -42,12 +48,17 @@ function LandingPage({onSubmit}) {
             onSubmit(prompt);
         }
     }
+
+    function randomMessage() {
+        const rand = Math.floor(Math.random()*messages.length);
+        return <p>{messages[rand]}</p>;
+    }
     
     return (
     <div className="page">
         <Left isLoggedIn={isLogginIn}/>
         <div className="landing-center">
-            <p>Lay It On Me Mama!</p>
+            {randomMessage()}
             <textarea
                 ref={textareaRef}
                 className="landing-input"

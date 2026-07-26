@@ -1,5 +1,6 @@
 package com.cosio.lm;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,4 +10,5 @@ public interface UserRepository extends JpaRepository<User, UUID>{
     Optional<User> findByUsername(String username);
     Optional<User> findByVerificationToken(UUID token);
     Optional<User> findByEmail(String email);
+    List<User> findByVerified(boolean verified);
 }

@@ -18,7 +18,10 @@ Database:
  - Postgres v18 install does not come with vector binaries, install from this [Repo](https://github.com/andreiramani/pgvector_pgsql_windows)
  - To reset db: DROP SCHEMA CASCADE; CREATE SCHEMA public AUTHORIZATION [USER]; GRANT ALL ON SCHEMA public to [USER]; CREATE EXTENSION IF NOT EXISTS vector;
 
-Spring Boot and NodeJS don't require any special setup.
+Spring Boot don't require any special setup.
+
+For React:
+ - npm install react-router-dom
 
 Set the Enviornment Variables:
    - MOCK_MODE       (microservice.py)    determines if LM is used to generate responses

@@ -42,6 +42,8 @@ public class ChatService {
     private final ChunkRepository chunkRepo;
     /** used to search through Accounts */
     private final AccountRepository accountRepo;
+    /** used to search through Users - distinctly from Accounts/Guests */
+    private final UserRepository userRepo;
 
     /** system prompt, to be shipped with each request to LM */
     private final String system = "You are PIE, a real estate market analyst."
@@ -53,7 +55,7 @@ public class ChatService {
     // auto-injection by Spring
     public ChatService(ConversationRepository convoRepo, GuestRepository guestRepo, 
         MessageRepository msgRepo, WebClient client, EmbeddingService embeddingService,
-        ChunkRepository chunkRepo, AccountRepository accountRepo) {
+        ChunkRepository chunkRepo, AccountRepository accountRepo, UserRepository userRepo) {
         this.convoRepo = convoRepo;
         this.guestRepo = guestRepo;
         this.msgRepo = msgRepo;
@@ -61,6 +63,7 @@ public class ChatService {
         this.embeddingService = embeddingService;
         this.chunkRepo = chunkRepo;
         this.accountRepo = accountRepo;
+        this.userRepo = userRepo;
     }
 
     /**
@@ -162,7 +165,6 @@ public class ChatService {
      * for any state Guests (hasn't been updated > 48hrs)
      * Scheduled to run every two days.
      * 
-     * ADD FEATURE TO CLEAR DOCUMENTS AS WELL
      */
     @Transactional
     @Scheduled(fixedRate = 2, timeUnit = TimeUnit.DAYS)
@@ -183,6 +185,23 @@ public class ChatService {
             guestRepo.delete(g);
         }
 
+    }
+
+    /**
+     * Clears out any users that have not been verified in the last hour.
+     * Runs hourly.
+     * 
+     */
+    @Transactional
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+    public void clearUnvalidatedUsers() {
+        
+        Instant cutoff = Instant.now().minus(Duration.ofHours(1));
+        for (User u : userRepo.findByVerified(false)) {
+            if (u.getCreatedAt().isBefore(cutoff)) {
+                userRepo.delete(u);
+            }
+        }   
     }
 
     // Guest helper services
