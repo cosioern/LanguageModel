@@ -7,15 +7,15 @@ PIE, what I've named the assistant, is a fine-tuned langauage modely deployed as
 ### Set Up a Conda Environment for the LM pipeline
 I recommend setting up a Conda environment like so:
  - On Windows / MacOS: conda create -n "Environment Name" python=3.11
- - pip install pymupdf transformers datasets pef trl accelerate bitsandbytes
+ - pip install pymupdf transformers datasets peft trl accelerate bitsandbytes
  - pip install torch --index-url https://download.pytorch.org/whl/cu121
- - (no longer recommend) ~~ pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu128 ~~
+ - (no longer recommend) ~~pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu128~~
  - pip install fastapi uvicorn python-docx llama-index sentence-transformers python-multipart  
 
-Python 3.11 version is the newest that will most reliably work with the necessary dependencies. This torch build is geared towards allowing PyTorch to make use of CUDA cores on NVidia GPUs, tried on RTX3060ti. You're mileage will vary with separate hardware.
+Python 3.11 version is the newest that will most reliably work with the necessary dependencies. This torch build is geared towards allowing PyTorch to make use of CUDA cores on NVidia GPUs, tried on RTX3060ti. You're mileage will vary with different hardware.
 
 Database:
- - Postgres v18 install does not come with vector binaries, install from [text](https://github.com/andreiramani/pgvector_pgsql_windows)
+ - Postgres v18 install does not come with vector binaries, install from this [Repo](https://github.com/andreiramani/pgvector_pgsql_windows)
  - To reset db: DROP SCHEMA CASCADE; CREATE SCHEMA public AUTHORIZATION [USER]; GRANT ALL ON SCHEMA public to [USER]; CREATE EXTENSION IF NOT EXISTS vector;
 
 Spring Boot and NodeJS don't require any special setup.
@@ -45,6 +45,7 @@ train.py contains fours sets of SFTConfig parameters used to train the LoRA adap
 ### 5. Fine-Tuning and Evaluation
 Find the training set on my HuggingFace page: [Dataset](https://huggingface.co/datasets/cosioe/RealEstate.v2).
 train.py contains four SFTConfig (training parameters), outputs checkpoints to /Checkpoints_config_{i}, and Adapters to /Adapters/Set_{i}  
+You may need to play around with these parameters to fit to your hardware. For example, the torch_dtype should be able to handle bfloats, but information is sparse, and attempting them on my own hardware led to errors. Other parameters may be adjusted to prevent crashes or improve strength of results dependeing on your hardware.
 
 First Round of Training:
  - Began with four sets of SFTConfig() parameter configurations. Using four prompts and the same generation parameters,
