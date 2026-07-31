@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,7 +19,10 @@ import java.sql.SQLException;
 
 import com.pgvector.PGvector;
 
+import io.github.bucket4j.Bucket;
+
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -29,6 +34,29 @@ public class LmApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(LmApplication.class, args);
 	}
+
+    @Bean
+    public ConcurrentHashMap<String, Bucket> createBucketMap() {
+        return new ConcurrentHashMap<String, Bucket>();
+    }
+
+    /**
+     * Bean handles limiting per-user traffic to the endpoints 
+     * Controller#embedDocument and Controller#generate using
+     * RateLimiter.
+     * 
+     * @param interceptor is the object handling rate limiting
+     * @return a configurer
+     */
+    @Bean
+    public WebMvcConfigurer webMvcConfigurer(RateLimiter interceptor) {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                registry.addInterceptor(interceptor).addPathPatterns("/generate", "/embedDocument");
+            } 
+        };
+    }
 
 	/**
 	 * WebClient to access microservices

@@ -1,7 +1,6 @@
 # Real Estate AI Assistant
-PIE, what I've named the assistant, is a fine-tuned langauage modely deployed as a web application. PIE is simultaneously a proof-of-concept and a learning exercise to primarily explore AI development / deployment, and secondarily full-stack application development. Such a tool ought be a useful aid in providing guidance for assessing residential assets or the state of the market.
-
-
+PIE, what I've named the assistant, is a fine-tuned langauage modely deployed as a web application. PIE is simultaneously a proof-of-concept and a learning exercise to primarily explore AI development / deployment, and secondarily full-stack application development. Such a tool ought be a useful aid in providing guidance for assessing residential assets or the state of the market.  
+This project is in continuous development. Currently, direct user-interactive features are the main focus, thought it will soon return to the refinment of the AI through further training rounds, tuning generation parameters, and honing the RAG pipeline.
 
 ## Getting Started
 ### Set Up a Conda Environment for the LM pipeline

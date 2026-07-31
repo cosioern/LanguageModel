@@ -45,7 +45,7 @@ function Middle({messages, prompt, setPrompt, bottomRef, textareaRef, handleKeyD
                     className="submit"
                     onClick={sendPrompt}
                     disabled={isStreaming}
->
+                >
                     <svg width="40" height="40" viewBox="0 0 25 23" fill="none">
                         <circle cx="12" cy="12" r="12" fill="currentColor" />
                         <path d="M12 16V8M12 8L8 12M12 8L16 12" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />

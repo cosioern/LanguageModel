@@ -22,6 +22,22 @@ function ChatPage({initialPrompt, chatHistory}) {
     const [isStreaming, setIsStreaming] = useState(false);
     const [isLogginIn, setLoggedIn] = useState(false);
 
+
+    // load chat history on refresh
+    useEffect(() => {
+        if (chatHistory?.length) return;
+
+        async function loadHistory() {
+            const res = await fetch(`http://localhost:8080/load`, {
+                credentials: "include"
+            });
+            const history = await res.json();
+            setMessages(history);
+        }
+
+        loadHistory();
+    }, []);
+
     // initial  api call, seamless transition between LandingPage and ChatPage
     useEffect(() => {
         async function init() {
@@ -138,9 +154,12 @@ function ChatPage({initialPrompt, chatHistory}) {
         })
         .then(res => {
             if (res.ok) {
-                setToast({message: `Uploaded \"${file.name}\"`, type: "success"})
+                setToast({message: `Uploaded \"${file.name}\"`, type: "success"});
+            } 
+            else if (res.status == 429) {
+                setToast({message: "Too Many Requests", type: "error"});
             } else {
-                setToast({message: "Upload Failed", type: "error"})
+                setToast({message: "Upload Failed", type: "error"});
             }
         })
         .catch(() => {
@@ -175,6 +194,11 @@ function ChatPage({initialPrompt, chatHistory}) {
             credentials:"include",
             method:"POST"
         });
+
+        if (res.status === 429) {
+            setToast({message: "Too Many Requests", type: "error"});
+        }
+
         const reader = res.body.getReader()
         const decoder = new TextDecoder;
         let tokens = await reader.read();

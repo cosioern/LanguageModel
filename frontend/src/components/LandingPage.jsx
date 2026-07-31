@@ -13,7 +13,7 @@ function LandingPage({onSubmit}) {
     const [prompt, setPrompt] = useState("");
     const textareaRef = useRef(null);
     const baseHeightRef = useRef(0);
-    const [isLogginIn, setLoggedIn] = useState(false);
+    const [isLogginIn, setLoggedIn] = useState(false); // change to LoggedIn?
 
 
     // checks if a user is logged in (accents profile pic button)

@@ -155,4 +155,7 @@ Returns: An embedding of the prompt as a fload[]
 """
 @app.post("/embedPrompt")
 def embedPrompt(req: Message) -> list[float]:
-    return encoder_model.encode(req.content).tolist()
+    if not MOCK_MODE:
+        return encoder_model.encode(req.content).tolist()
+    else:
+        return [0.0]*384

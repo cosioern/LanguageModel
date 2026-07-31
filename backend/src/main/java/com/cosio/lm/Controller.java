@@ -18,6 +18,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import reactor.core.publisher.Flux;
 
+/**
+ * Controller
+ * Consists of endpoints handling all traffic to backend
+ */
 @RestController
 @RequestMapping("/")
 public class Controller {
