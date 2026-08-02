@@ -22,12 +22,13 @@ Spring Boot don't require any special setup.
 For React:
  - npm install react-router-dom
 
-Set the Enviornment Variables:
+Set the Environment Variables:
    - MOCK_MODE       (microservice.py)    determines if LM is used to generate responses
    - JWT_KEY         (application.yml)    generate by runing GenerateKey.java
    - EMAIL           (application.yml)    email to use to send verification links
    - SMTP_PASSWORD   (application.yml)    app password to use smtp (with email)
    - DB_USER         (application.yml)    your username for Postgres
+   - OPENAI_API_KEY  (preprocessor.py)    used for new extension of the dataset generation pipeline
 
 Download the dataset, link at #5 below, into the /TraningSet folder.
 
