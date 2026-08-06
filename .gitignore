@@ -25,3 +25,4 @@
 /language-model/Examples
 /language-model/eval-prompts.txt
 /language-model/textbooks/
+/language-model/dataset.jsonl
