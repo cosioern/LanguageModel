@@ -28,7 +28,7 @@ Set the Environment Variables:
    - EMAIL           (application.yml)    email to use to send verification links
    - SMTP_PASSWORD   (application.yml)    app password to use smtp (with email)
    - DB_USER         (application.yml)    your username for Postgres
-   - OPENAI_API_KEY  (preprocessor.py)    used for new extension of the dataset generation pipeline
+   - GEMINI_API_KEY  (preprocessor.py)    used for new extension of the dataset generation pipeline
 
 Download the dataset, link at #5 below, into the /TraningSet folder.
 

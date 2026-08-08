@@ -1,8 +1,7 @@
 import pymupdf
 from pathlib import Path
-# from openai import OpenAI 4:55
 from google import genai
-from google.genai.errors import APIError, ClientError#, ServiceError
+from google.genai.errors import APIError, ClientError
 import json
 import time
 import re
@@ -16,16 +15,14 @@ def clean_text(text) -> str:
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
-# automatically loads API key from OPENAI_API_KEY environment variable
-# client = OpenAI()
+# automatically loads API key from GEMINI_API_KEY environment variable
 client = genai.Client()
-# Prompt = "Generate one question that is answered completely by the following text, do not invent information."
 Prompt = """Generate one question that can be answered completely and directly using only the following text. 
 The question should target the main idea or a key fact in the text. Do not ask about information that is not explicitly stated. 
 Do not add assumptions or require outside knowledge."""
 
 # out = open(Path("textbooks") / "dataset.jsonl", "w", encoding="utf-8")
-out = open(Path("dataset.jsonl"), "a", encoding="utf-8")
+out = open(Path("dataset.jsonl"), "w", encoding="utf-8")
 for item in Path("textbooks").iterdir():
     if not item.is_file() or item.stat().st_size == 0 or item.name.startswith("."):
         continue
@@ -41,7 +38,7 @@ for item in Path("textbooks").iterdir():
         header = ""
         paragraph = ""
         for page_num, page in enumerate(doc):
-            if page_num < 20:
+            if page_num < 107:
                 continue
             try: 
                 page_dict = page.get_text("dict")
@@ -49,17 +46,21 @@ for item in Path("textbooks").iterdir():
                 print(f"Failed to extract text from page {page_num} from {item.name}: {str(e)}")
                 continue
 
-            # header = ""
-            # paragraph = ""
             for block in page_dict["blocks"]:
                 if block["type"] != 0:
                     continue
                 for line in block["lines"]:
                     for span in line["spans"]:
-                        # font_size = span["size"]
-                        # print("Font size: " + f"{font_size}" + " and text: " + span["text"])
-                        if span["size"] == 20 or span["size"] == 18:
-                            if header and paragraph and len(paragraph) <= 3000:
+                        font_size = span["size"]
+                        flags = span["flags"]
+                        # print("Font size: " + f"{font_size}" + " and text: " + span["text"] + " and isBold: " + f"{flags & 16}" + " and isItalic: " + f"{flags & 2}")
+                        if (span["size"] == 20
+                            or span["size"] == 18
+                            or (span["size"] == 9.5 and (span["flags"] &16) and not (span["flags"] & 2))        # 9.5, bold, not italic
+                            or (span["size"] == 12 and not (span["flags"] & 16) and not (span["flags"] & 2))    # 12, not bold, not italic
+                        ):
+                            # make sure that header is assigned to text that's font size: 20/18 or bold 
+                            if header and paragraph and len(paragraph) >= 165 and len(paragraph) <= 3000:
                                 while True:
                                     try:
                                         paragraph = clean_text(paragraph)
@@ -103,7 +104,7 @@ for item in Path("textbooks").iterdir():
                         if span["size"] == 9.5:
                             paragraph += span["text"] + " "
 
-        if header and paragraph and len(paragraph) <= 3000:
+        if header and paragraph and len(paragraph) >= 165 and len(paragraph) <= 3000:
             while True:
                 try:
                     paragraph = clean_text(paragraph)

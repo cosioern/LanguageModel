@@ -5,7 +5,9 @@
   flex-direction: column;
 
   position:fixed;
-  height:100vh;
+  /* height:100vh; */
+  top:20px;
+  bottom:20px;
   box-sizing:border-box;
   display:flex;
   flex-direction:column;
@@ -13,6 +15,14 @@
 
   top:20px;
   right:20px;
+  /* gap:12px; */
+
+  justify-content: space-between;
+}
+
+.top-page {
+  display: flex;
+  flex-direction: column;
   gap:12px;
 }
 
@@ -26,7 +36,8 @@
 
 .login-button,
 .signin-button,
-.share-button {
+.share-button,
+.theme-button {
   padding: 8px 16px;
   border-radius: 999px;
   border: none;
@@ -51,6 +62,22 @@
   padding: 8px 22px;
 }
 
+.theme-light {
+  align-self: flex-end;
+  /* background: lightgray;
+  color: black; */
+  background: gray;
+  color: white;
+
+}
+
+.theme-dark {
+  align-self: flex-end;
+  background: lightgray;
+  color: black;
+
+}
+
 .login-button:hover {
   opacity: 0.7;
 }
@@ -61,4 +88,12 @@
 
 .share-button:hover {
   opacity: 0.8;
+}
+
+.theme-light:hover {
+  color: yellow;
+}
+
+.theme-dark:hover {
+  color: yellow;
 }

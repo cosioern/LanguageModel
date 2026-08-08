@@ -137,9 +137,9 @@
 }
 
 .toast-error {
-    background: white;
-    color: #333;
-    border-left: 4px solid #ef4444;
-    border-right: 4px solid #ef4444;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  background: white;
+  color: #333;
+  border-left: 4px solid #ef4444;
+  border-right: 4px solid #ef4444;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }

@@ -31,3 +31,12 @@
 p {
     font-size:1.5rem;
 }
+
+body.dark .landing-input {
+  background-color: rgb(59, 59, 59);
+  color: white;
+}
+
+body.dark .landing-center {
+  color: slategray;
+}

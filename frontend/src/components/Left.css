@@ -58,3 +58,7 @@
   background: lightgray;
   border-radius: 20px;
 }
+
+body.dark .sideLeft h3 {
+  color:lightsteelblue;
+}
