@@ -14,7 +14,7 @@ function LandingPage({onSubmit}) {
     const textareaRef = useRef(null);
     const baseHeightRef = useRef(0);
     const [isLogginIn, setLoggedIn] = useState(false); // change to LoggedIn?
-
+    const [greeting, setGreeting] = useState("");
 
     // checks if a user is logged in (accents profile pic button)
     useEffect(() => {
@@ -36,6 +36,15 @@ function LandingPage({onSubmit}) {
         }
     }, []);
 
+    // load a random message on 
+    useEffect(() => {
+        function randomMessage() {
+            const rand = Math.floor(Math.random()*messages.length);
+            setGreeting(messages[rand]); 
+        }
+        randomMessage();
+    }, []);
+
     function resizeTextarea(e1) {
         e1.style.height="auto";
         const needed=e1.scrollHeight;
@@ -48,17 +57,12 @@ function LandingPage({onSubmit}) {
             onSubmit(prompt);
         }
     }
-
-    function randomMessage() {
-        const rand = Math.floor(Math.random()*messages.length);
-        return <p>{messages[rand]}</p>;
-    }
     
     return (
     <div className="page">
         <Left isLoggedIn={isLogginIn}/>
         <div className="landing-center">
-            {randomMessage()}
+            <p>{greeting}</p>
             <textarea
                 ref={textareaRef}
                 className="landing-input"
