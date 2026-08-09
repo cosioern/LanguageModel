@@ -6,7 +6,8 @@ function Left({isLoggedIn}) {
 
     return (
         <div className="sideLeft">
-            <h3>Powered by Bernie</h3>
+            {/* <h3>Powered by Bernie</h3> */}
+            <h3>Built for Big Brains</h3>
             <button onClick={() => navigate((isLoggedIn ? "/profile" : "/register"))} className={`profile ${isLoggedIn ? "logged-in" : ""}`} title="Profile">
                 <img src="/profile.png" alt="Profile" />
             </button>

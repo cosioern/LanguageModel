@@ -62,22 +62,6 @@
   padding: 8px 22px;
 }
 
-.theme-light {
-  align-self: flex-end;
-  /* background: lightgray;
-  color: black; */
-  background: gray;
-  color: white;
-
-}
-
-.theme-dark {
-  align-self: flex-end;
-  background: lightgray;
-  color: black;
-
-}
-
 .login-button:hover {
   opacity: 0.7;
 }
@@ -88,6 +72,48 @@
 
 .share-button:hover {
   opacity: 0.8;
+}
+
+body.dark .login-button {
+  background: white;
+  color: black;
+}
+
+body.dark .signin-button {
+  background: #747474;
+  color: #111111;
+}
+
+body.dark .share-button {
+  background: #4aa8e8;
+  color: #062b45;
+}
+
+body.dark .login-button:hover {
+  opacity: 0.8;
+  /* background: white;
+  color: black; */
+}
+
+body.dark .signin-button:hover {
+  background: #4c4c4c;
+  color: white;
+}
+
+body.dark .share-button:hover {
+  opacity: 0.8;
+}
+
+.theme-light {
+  align-self: flex-end;
+  background: gray;
+  color: white;
+}
+
+.theme-dark {
+  align-self: flex-end;
+  background: lightgray;
+  color: black;
 }
 
 .theme-light:hover {

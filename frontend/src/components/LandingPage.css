@@ -35,8 +35,9 @@ p {
 body.dark .landing-input {
   background-color: rgb(59, 59, 59);
   color: white;
+  box-shadow: 0px 1px 15px rgb(130, 200, 245);
 }
 
 body.dark .landing-center {
-  color: slategray;
+  color: rgb(130, 200, 245);
 }

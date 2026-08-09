@@ -67,7 +67,7 @@
 }
 
 .upload-button:hover {
-  background: gray;
+  /* background: gray; */
   color: black;
   border-radius: 999px;
 }
@@ -142,4 +142,37 @@
   border-left: 4px solid #ef4444;
   border-right: 4px solid #ef4444;
   box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+
+/* Dark Mode Decorations */
+
+body.dark .input-wrapper {
+  background-color: rgb(59, 59, 59);
+  color: white;
+  box-shadow: 0px 1px 15px rgb(130, 200, 245);
+}
+
+body.dark .container {
+  background-color: black;
+  color: white;
+}
+
+body.dark .input {
+  color: white;
+}
+
+body.dark .upload-button {
+  color: white;
+}
+
+body.dark .message.user {
+  /* background-color: rgb(25, 45, 65); */
+  background-color: rgb(7, 75, 143);
+  color: white;
+}
+
+body.dark .message.assistant {
+  background-color: gray;
+  color: white;
 }
