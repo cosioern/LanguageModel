@@ -26,6 +26,7 @@ function ChatPage({initialPrompt, chatHistory}) {
     // load chat history on refresh
     useEffect(() => {
         if (chatHistory?.length) return;
+        if (initialPrompt && initialPrompt.trim()) return; // skip when coming from landing page
 
         async function loadHistory() {
             const res = await fetch(`http://localhost:8080/load`, {
@@ -78,6 +79,7 @@ function ChatPage({initialPrompt, chatHistory}) {
         init();
     }, []);
     
+    // logs user in if credentials exist in browser
     useEffect(() => {
         async function checkStatus() {
             const res = await fetch(`http://localhost:8080/authStatus`, {

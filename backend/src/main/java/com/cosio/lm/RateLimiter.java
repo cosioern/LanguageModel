@@ -33,8 +33,8 @@ public class RateLimiter implements HandlerInterceptor {
         // identity lookup
         String session = getCookie(req);
 
-        // bucket creation
-        if (session == null) return false;
+        // bucket creation, if new guest, use their IP to track rate until overriden by session cookie
+        if (session == null) session = req.getRemoteAddr(); //return false;
 
         if (!bucketMap.containsKey(session)) {
             bucketMap.put(session, Bucket.builder()
