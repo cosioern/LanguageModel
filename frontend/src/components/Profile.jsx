@@ -1,5 +1,7 @@
 import {useState, useEffect} from "react"
+import ToggleTheme from "./ToggleTheme";
 import "./Profile.css"
+
 
 function Profile() {
 
@@ -50,6 +52,7 @@ function Profile() {
                     <span className="value">{birthday}</span>
                 </div>
             </div>
+            <ToggleTheme/>
         </div>
     );
 }

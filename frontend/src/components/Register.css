@@ -3,6 +3,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    /* transition: background-color 1s ease, color 1s ease; */
 }
 
 .register-card {
@@ -14,6 +15,7 @@
     display: flex;
     flex-direction: column;
     gap:15px;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .register-card h1 {
@@ -21,12 +23,14 @@
     /* text-align: center; */
     font-size: 2.5rem;
     line-height: 1.6;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .register-card p {
     /* text-align: center; */
     /* color: #666; */
     line-height: 1.4;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .register-card input {
@@ -34,6 +38,7 @@
     border-radius: 10px;
     border: 1px solid #ddd;
     font-size: 16px;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .register-card button {
@@ -44,6 +49,7 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .register-card button:hover {
@@ -52,4 +58,39 @@
 
 .status {
     color: red;
+}
+
+/* Dark Mode Decorations */
+
+body.dark .register-card {
+    background: transparent;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .5);
+    /* transition: background-color 1s ease, color 1s ease; */
+}
+
+body.dark .register-card p {
+    /* color: #94a3b8; */
+    color: #a1a1aa;
+}
+
+body.dark .register-card input {
+    background: #27272a;
+    color: #f4f4f5;
+    border: 1px solid #52525b;
+}
+
+body.dark .register-card button {
+    /* background: #6366f1;
+    color: #fff; */
+    background: #d4d4d8;
+    color: #18181b;
+}
+
+body.dark .register-card button:hover {
+    /* background: #4f46e5; */
+    background: #f7f7fb;
+}
+
+body.dark .status {
+    color: #f87171;
 }

@@ -1,6 +1,7 @@
-import {useState} from "react"
-import { useNavigate } from "react-router-dom"
-import "./Login.css"
+import {useState} from "react";
+import { useNavigate } from "react-router-dom";
+import ToggleTheme from "./ToggleTheme.jsx";
+import "./Login.css";
 
 function Login() {
     const[username, setUsername] = useState("");
@@ -51,6 +52,7 @@ function Login() {
 
                 {status && <p className="status">{status}</p>}
             </form>
+            <ToggleTheme/>
         </div>
 );
 }

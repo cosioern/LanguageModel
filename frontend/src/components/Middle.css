@@ -13,6 +13,8 @@
   height: 100vh;
   overflow-y: auto;
   scrollbar-width: none;
+
+  transition: background-color 1s ease, color 1s ease;
 }
 
 .message {
@@ -25,15 +27,21 @@
   margin-left: 20px;
   margin-right: 20px;
   font-size: 14px;
+  transition: background-color 1s ease, color 1s ease;
 }
 
 .message.user {
-  background: #dbeafe;
+  /* background: #dbeafe; */
+  /* background: #4390f5; */
+  background: #c5defe;
+  color: black;
   margin-left: auto;
 }
 
 .message.assistant {
   background: #e5e7eb;
+  color: black;
+  /* background: #dee0e5; */
   margin-right: auto;
 }
 
@@ -55,6 +63,7 @@
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .upload-button {
@@ -147,15 +156,15 @@
 
 /* Dark Mode Decorations */
 
+body.dark .container {
+  background: transparent;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, .5);
+}
+
 body.dark .input-wrapper {
   background-color: rgb(59, 59, 59);
   color: white;
   box-shadow: 0px 1px 15px rgb(130, 200, 245);
-}
-
-body.dark .container {
-  background-color: black;
-  color: white;
 }
 
 body.dark .input {
@@ -167,7 +176,6 @@ body.dark .upload-button {
 }
 
 body.dark .message.user {
-  /* background-color: rgb(25, 45, 65); */
   background-color: rgb(7, 75, 143);
   color: white;
 }

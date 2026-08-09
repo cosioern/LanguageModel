@@ -6,7 +6,6 @@
     /* background: linear-gradient(135deg, #667eea, #764ba2);  */
     /* background: linear-gradient(135deg, #1e293b, #334155, #475569); */
     /* background: linear-gradient(135deg, #0f172a, #1e3a8a, #0f766e); */
-    
     }
 
 .login-card {
@@ -25,13 +24,14 @@
     /* text-align: center; */
     font-size: 2.5rem;
     line-height: 1.6;
-
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .login-card p {
     /* text-align: center; */
     color: #666;
-    line-height: 1.4
+    line-height: 1.4;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .login-card input {
@@ -39,6 +39,7 @@
     border-radius: 10px;
     border: 1px solid #ddd;
     font-size: 16px;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .login-card button {
@@ -50,6 +51,7 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
+    transition: background-color 1s ease, color 1s ease;
 }
 
 .login-card button:hover {
@@ -59,4 +61,35 @@
 
 .status {
     color: red;
+}
+
+
+/* Dard mode decorations */
+
+body.dark .login-card {
+    background: transparent;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .5);
+}
+
+body.dark .login-card p {
+    color: #a1a1aa;
+}
+
+body.dark .login-card input {
+    background: #27272a;
+    color: #f4f4f5;
+    border: 1px solid #52525b;
+}
+
+body.dark .login-card button {
+    background: #d4d4d8;
+    color: #18181b;
+}
+
+body.dark .login-card button:hover {
+    background: #f7f7fb;
+}
+
+body.dark .status {
+    color: #f87171;
 }

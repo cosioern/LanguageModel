@@ -1,4 +1,5 @@
 import { useState } from "react"
+import ToggleTheme from "./ToggleTheme";
 import "./Register.css"
 
 function Register() {
@@ -89,6 +90,7 @@ function Register() {
 
                 {status && <p>{status}</p>}
             </form>
+            <ToggleTheme/>
         </div>
     );
 }

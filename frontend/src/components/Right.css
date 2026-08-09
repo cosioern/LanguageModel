@@ -44,6 +44,7 @@
 
   font-size: 14px;
   cursor: pointer;
+  transition: background-color 1s ease, color 1s ease;
 }
 
 .login-button {
@@ -102,24 +103,4 @@ body.dark .signin-button:hover {
 
 body.dark .share-button:hover {
   opacity: 0.8;
-}
-
-.theme-light {
-  align-self: flex-end;
-  background: gray;
-  color: white;
-}
-
-.theme-dark {
-  align-self: flex-end;
-  background: lightgray;
-  color: black;
-}
-
-.theme-light:hover {
-  color: yellow;
-}
-
-.theme-dark:hover {
-  color: yellow;
 }

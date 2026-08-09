@@ -41,7 +41,7 @@
 }
 
 .profile.logged-in {
-  box-shadow: 0 0 0 2px #4caf50;
+  box-shadow: 0 0 0 3px #4caf50;
   border-radius: 999px;
   background: none;
   border: none;
@@ -52,6 +52,7 @@
   margin-top:auto;
   align-self:flex-start;
   cursor: pointer;
+  transition: background-color 1s ease, color 1s ease;
 }
 
 .profile.logged-in:hover {
@@ -61,4 +62,8 @@
 
 body.dark .sideLeft h3 {
   color: rgb(130, 200, 245);
+}
+
+body.dark .profile.logged-in {
+  box-shadow: 0 0 0 3px #006a00;
 }

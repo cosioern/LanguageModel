@@ -1,0 +1,26 @@
+
+.theme-button {
+  position:fixed;
+  bottom: 20px;
+  right:20px;
+}
+
+.theme-light {
+  align-self: flex-end;
+  background: gray;
+  color: white;
+}
+
+.theme-dark {
+  align-self: flex-end;
+  background: lightgray;
+  color: black;
+}
+
+.theme-light:hover {
+  color: yellow;
+}
+
+.theme-dark:hover {
+  color: yellow;
+}
