@@ -1,7 +1,11 @@
 package com.cosio.lm;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import io.github.bucket4j.Bucket;
@@ -27,6 +31,11 @@ public class RateLimiter implements HandlerInterceptor {
         this.bucketMap = bucketMap;
     }
 
+    /**
+     * Handle rate-limiting before requests reaches the controller.
+     * First-time users are given a key based on their IP,
+     * which is then discarded for a Guest/User key after the first message.
+     */
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) {
 
@@ -34,7 +43,7 @@ public class RateLimiter implements HandlerInterceptor {
         String session = getCookie(req);
 
         // bucket creation, if new guest, use their IP to track rate until overriden by session cookie
-        if (session == null) session = req.getRemoteAddr(); //return false;
+        if (session == null) session = "ip:" + req.getRemoteAddr(); //return false;
 
         if (!bucketMap.containsKey(session)) {
             bucketMap.put(session, Bucket.builder()
@@ -73,6 +82,20 @@ public class RateLimiter implements HandlerInterceptor {
         }
 
         return null;
+    }
+
+    /**
+     * The IP key is replaced with a proper Guest/User key right after
+     * the first message is sent, so the IP key is no longer needed to track rate-limiting.
+     * 
+     */
+    @Scheduled(fixedRate = 20, timeUnit = TimeUnit.MINUTES)
+    public void clearBuckets() {
+        for (Map.Entry<String, Bucket> b : bucketMap.entrySet()) {
+            if (b.getKey().startsWith("ip:")) {
+                bucketMap.remove(b.getKey());
+            }
+        }
     }
 
 }
