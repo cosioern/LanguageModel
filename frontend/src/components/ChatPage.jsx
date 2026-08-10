@@ -234,7 +234,7 @@ function ChatPage({initialPrompt, chatHistory}) {
     return (
         <div className="page">
             <Left isLoggedIn={isLogginIn} />
-            <Middle 
+            <Middle
                 messages={messages}
                 prompt={prompt}
                 setPrompt={setPrompt}

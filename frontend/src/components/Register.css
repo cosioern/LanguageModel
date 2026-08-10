@@ -49,7 +49,7 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 1s ease, color 1s ease;
+    /* transition: background-color 1s ease, color 1s ease; */
 }
 
 .register-card button:hover {
@@ -58,6 +58,8 @@
 
 .status {
     color: red;
+    /* transition: background-color 1s ease, color 1s ease; */
+    transform: translateY(10px);
 }
 
 /* Dark Mode Decorations */
@@ -91,6 +93,6 @@ body.dark .register-card button:hover {
     background: #f7f7fb;
 }
 
-body.dark .status {
+body.dark .register-card .status {
     color: #f87171;
 }

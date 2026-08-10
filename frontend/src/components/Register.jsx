@@ -14,10 +14,14 @@ function Register() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        if (!emailRegex.test(email)) {
-            setStatus("Invalid Email");
-            return; 
-        }
+        if (!username)  {setStatus("Enter a Username"); return;}
+        if (!name)      {setStatus("Enter a Name"); return;}
+        if (!email)     {setStatus("Enter an Email"); return;}
+        if (!birthDate) {setStatus("Enter a Birhdate"); return;}
+        if (!password)  {setStatus("Enter a Password"); return;}
+        if (!emailRegex.test(email)) {setStatus("Invalid Email"); return;}
+        if (new Date(birthDate) >= new Date()) {setStatus("Enter a Valid Birthdate"); return;}
+
         const formData = new URLSearchParams();
         formData.append("username", username);
         formData.append("email", email);
@@ -35,7 +39,8 @@ function Register() {
         if (res.ok) {
             setStatus("Check your email to verify your account and close this tab.");
         } else {
-            setStatus("Registration failed. Please try again.");
+            // set exception message
+            setStatus(await res.text());
         }
     }
 
@@ -43,7 +48,7 @@ function Register() {
     return (
         <div className="register-page">
             <form className="register-card" onSubmit={handleSubmit}>
-                <h1>Wanna chat?</h1>
+                <h1>Wanna Chat?</h1>
                 <p>Create an Account</p>
 
                 <input 
@@ -88,7 +93,7 @@ function Register() {
 
                 <button type="submit">Register</button>
 
-                {status && <p>{status}</p>}
+                {status && <p className="status">{status}</p>}
             </form>
             <ToggleTheme/>
         </div>

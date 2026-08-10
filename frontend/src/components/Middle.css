@@ -75,12 +75,6 @@
     flex-shrink: 0;
 }
 
-.upload-button:hover {
-  /* background: gray; */
-  color: black;
-  border-radius: 999px;
-}
-
 .input {
     flex: 1;
     font-size: 16px;
@@ -93,11 +87,6 @@
     box-sizing: border-box;
     line-height: 40px;
 }
-
-/* .input:disabled{
-  opacity: 0.6;
-  cursor: not-allowed;
-} */
 
 .submit {
   background: none;
@@ -163,12 +152,7 @@ body.dark .container {
 
 body.dark .input-wrapper {
   background-color: rgb(59, 59, 59);
-  color: white;
   box-shadow: 0px 1px 15px rgb(130, 200, 245);
-}
-
-body.dark .input {
-  color: white;
 }
 
 body.dark .upload-button {

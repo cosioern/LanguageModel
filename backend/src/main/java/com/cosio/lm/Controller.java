@@ -1,5 +1,6 @@
 package com.cosio.lm;
 
+import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cosio.lm.AccountService.EmailTakenException;
+import com.cosio.lm.AccountService.UsernameTakenException;
+import com.cosio.lm.AccountService.VerificationLinkException;
+
+import java.io.IOException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import reactor.core.publisher.Flux;
@@ -158,9 +164,18 @@ public class Controller {
     @RequestParam(value="birthDate") LocalDate birthDate,
     HttpServletResponse response) {
 
-        UUID token = accountService.createUser(username, email, password, birthDate, name);
-        // failure to send email => user removed, send failure status code
-        if (token == null) {response.setStatus(401);}
+        PrintWriter out = null;
+        try {
+            out = response.getWriter();
+            UUID token = accountService.createUser(username, email, password, birthDate, name);
+        } catch (VerificationLinkException | EmailTakenException | UsernameTakenException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            out.write(e.getMessage());
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
     }
 
     /**

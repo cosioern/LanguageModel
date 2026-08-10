@@ -63,24 +63,25 @@ public class AccountService {
      * @param birthDate user's birthday
      * @param name      user's name
      * @return          a UUID to be compared against token in link
+     * 
+     * @throws UsernameTakenException       if requested username is taken
+     * @throws EmailTakenException          if requested email is taken
+     * @throws VerificationLinkException    if link fails to send
      */
-    public UUID createUser(String username, String email, String password,LocalDate birthDate, String name)  {
+    public UUID createUser(String username, String email, String password,LocalDate birthDate, String name) 
+        throws UsernameTakenException, EmailTakenException, VerificationLinkException {
         
-        // replace with custom exceptions?
-        if (userRepo.findByUsername(username).isPresent() || userRepo.findByEmail(email).isPresent()) {
-            return null;
-        }
+        System.out.println("\nWELL???");
+        if (userRepo.findByUsername(username).isPresent()) {throw new UsernameTakenException();}
+        if (userRepo.findByEmail(email).isPresent()) {throw new EmailTakenException();}
 
         String hash = encoder.encode(password);
         User user = new User(username, email, hash, name, birthDate);
-        userRepo.save(user);
 
         // error sending link, undo user creation
-        if (!sendVerificationLink(email, user.getVerificationToken())) {
-            userRepo.delete(user);
-            return null;
-        }
+        if (!sendVerificationLink(email, user.getVerificationToken())) {throw new VerificationLinkException();}
 
+        userRepo.save(user);
         return user.getVerificationToken();
     }
 
@@ -210,4 +211,21 @@ public class AccountService {
         return details;
     }
 
+    protected class UsernameTakenException extends Exception {
+        public UsernameTakenException() {
+            super("This username is taken.");
+        }
+    }
+
+    protected class EmailTakenException extends Exception {
+        public EmailTakenException() {
+            super("This email address is taken.");
+        }
+    }
+
+    protected class VerificationLinkException extends Exception {
+        public VerificationLinkException() {
+            super("Failed to send verification link.");
+        }
+    }
 }
