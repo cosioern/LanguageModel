@@ -71,17 +71,19 @@ public class AccountService {
     public UUID createUser(String username, String email, String password,LocalDate birthDate, String name) 
         throws UsernameTakenException, EmailTakenException, VerificationLinkException {
         
-        System.out.println("\nWELL???");
         if (userRepo.findByUsername(username).isPresent()) {throw new UsernameTakenException();}
         if (userRepo.findByEmail(email).isPresent()) {throw new EmailTakenException();}
 
         String hash = encoder.encode(password);
         User user = new User(username, email, hash, name, birthDate);
+        userRepo.save(user);
 
         // error sending link, undo user creation
-        if (!sendVerificationLink(email, user.getVerificationToken())) {throw new VerificationLinkException();}
+        if (!sendVerificationLink(email, user.getVerificationToken())) {
+            userRepo.delete(user);
+            throw new VerificationLinkException();
+        }
 
-        userRepo.save(user);
         return user.getVerificationToken();
     }
 
@@ -213,19 +215,19 @@ public class AccountService {
 
     protected class UsernameTakenException extends Exception {
         public UsernameTakenException() {
-            super("This username is taken.");
+            super("This username is taken");
         }
     }
 
     protected class EmailTakenException extends Exception {
         public EmailTakenException() {
-            super("This email address is taken.");
+            super("This email address is taken");
         }
     }
 
     protected class VerificationLinkException extends Exception {
         public VerificationLinkException() {
-            super("Failed to send verification link.");
+            super("Failed to send verification link");
         }
     }
 }

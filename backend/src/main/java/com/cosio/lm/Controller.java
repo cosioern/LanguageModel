@@ -1,6 +1,5 @@
 package com.cosio.lm;
 
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +18,6 @@ import com.cosio.lm.AccountService.EmailTakenException;
 import com.cosio.lm.AccountService.UsernameTakenException;
 import com.cosio.lm.AccountService.VerificationLinkException;
 
-import java.io.IOException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import reactor.core.publisher.Flux;
@@ -157,25 +155,20 @@ public class Controller {
      * @param response  to convey success/failure
      */
     @PostMapping("/register")
-    public void register(@RequestParam(value="username") String username, 
+    public String register(@RequestParam(value="username") String username, 
     @RequestParam(value="email") String email, 
     @RequestParam(value="password") String password,
     @RequestParam(value="name") String name,
     @RequestParam(value="birthDate") LocalDate birthDate,
     HttpServletResponse response) {
 
-        PrintWriter out = null;
         try {
-            out = response.getWriter();
-            UUID token = accountService.createUser(username, email, password, birthDate, name);
+            accountService.createUser(username, email, password, birthDate, name);
         } catch (VerificationLinkException | EmailTakenException | UsernameTakenException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            out.write(e.getMessage());
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return e.getMessage();
         }
-        
+        return "";
     }
 
     /**
