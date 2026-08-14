@@ -11,4 +11,5 @@ public interface UserRepository extends JpaRepository<User, UUID>{
     Optional<User> findByVerificationToken(UUID token);
     Optional<User> findByEmail(String email);
     List<User> findByVerified(boolean verified);
+    Optional<User> findByResetToken(UUID resetToken);
 }

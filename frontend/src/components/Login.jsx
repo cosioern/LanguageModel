@@ -25,7 +25,7 @@ function Login() {
         if (res.ok) {
             navigate("/chat");
         } else {
-            setStatus("Login Failed. Bad Credentials");
+            setStatus("Wrong username or password");
         }
     }
 
@@ -51,6 +51,7 @@ function Login() {
                 <button type="submit">Login</button>
 
                 {status && <p className="status">{status}</p>}
+                <button className="reset-link" onClick={() => navigate("/forgot-password")}>Forgot Your Password?</button>
             </form>
             <ToggleTheme/>
         </div>

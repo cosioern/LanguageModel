@@ -59,10 +59,22 @@
     /* background: #115e59; */
 }
 
-.status {
+.login-card .status {
+    font-size:1rem;
     color: red;
 }
 
+.login-card .reset-link {
+    background: none;
+    color: #667eea; 
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
+.login-card .reset-link:hover {
+    background: none;
+}
 
 /* Dard mode decorations */
 
@@ -90,6 +102,17 @@ body.dark .login-card button:hover {
     background: #f7f7fb;
 }
 
-body.dark .status {
+body.dark .login-card .status {
     color: #f87171;
+}
+
+body.dark .login-card .reset-link {
+    background: none;
+    color: #667eea; /* or whatever link color fits your palette */
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+body.dark .login-card .reset-link:hover {
+    background: none;
 }

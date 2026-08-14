@@ -181,6 +181,7 @@ public class AccountService {
             return null;
         }
         user.setVerified();
+        user.invalidateVerificationToken();
         userRepo.save(user);
         
         String token = Jwts.builder()
@@ -211,6 +212,61 @@ public class AccountService {
         );
 
         return details;
+    }
+
+    /**
+     * Activate a user's password reset token and token expiry.
+     * Send to the user's email a one-time use link with validator token
+     * to reset their password.
+     * 
+     * @param email to send password reset link
+     * @return      true if successful, false otherwise
+     */
+    public boolean sendPasswordResetLink(String email) {
+
+        User user = userRepo.findByEmail(email).orElse(null);
+        if (user == null) return false;
+        user.setResetToken();
+        userRepo.save(user);
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(email);
+        mail.setSubject("Password Reset Link");
+        mail.setText("Follow the link to reset your password: http://localhost:5173/reset-password?token="+ user.getResetToken());
+
+        try {mailSender.send(mail);}
+        catch (MailException e) {e.printStackTrace(); return false;}
+
+        return true;
+    }
+
+    /**
+     * If token has not expired, hash and persist user's new password.
+     * Build session token for user.
+     * 
+     * @param newPassword   to encode and persist
+     * @param resetToken    to identify a user that had recently requested a password change
+     * @return              a session cookie built from user's id
+     */
+    public String changePassword(String newPassword, UUID resetToken) {
+
+        User user = userRepo.findByResetToken(resetToken).orElse(null);
+        if (user == null) {return null;}
+        if (user.isExpired()) { return null;}
+
+        String hash  = encoder.encode(newPassword);
+        user.setPassword(hash);
+        user.invalidateToken();
+        userRepo.save(user);
+
+        String token = Jwts.builder()
+            .subject(user.getID().toString())
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + Duration.ofDays(2).toMillis()))
+            .signWith(secretKey)
+            .compact();
+        
+        return token;
     }
 
     protected class UsernameTakenException extends Exception {

@@ -262,4 +262,35 @@ public class Controller {
         return false;
     }
 
+    /**
+     * Send the password reset link
+     * 
+     * @param email     to send the link to
+     * @param response  carries status code
+     */
+    @PostMapping("/forgotPassword")
+    public void forgotPassword(@RequestParam(value="email") String email, HttpServletResponse response) {
+        if (!accountService.sendPasswordResetLink(email)) {
+            response.setStatus(401);
+            return;
+        }
+    }
+
+    /**
+     * Handle changing a password and returning a user session identifier
+     * 
+     * @param resetToken    validates that the user is coming from a server-generated link
+     * @param password      is the new password to persist
+     * @param response      carries the session cookie
+     */
+    @PostMapping("/resetPassword")
+    public void resetPassword(@RequestParam(value="token") UUID resetToken,
+        @RequestParam(value="password") String newPassword, 
+        HttpServletResponse response) {
+
+        String token = accountService.changePassword(newPassword, resetToken);
+        if (token == null) {response.setStatus(401); return;}
+
+        response.addCookie(generateCookie(token));
+    }
 }
