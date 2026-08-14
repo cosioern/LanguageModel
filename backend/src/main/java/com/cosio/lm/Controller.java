@@ -293,4 +293,21 @@ public class Controller {
 
         response.addCookie(generateCookie(token));
     }
+
+    @PostMapping("/logout")
+    public void logout(@CookieValue(value = "token", required = true) String token, HttpServletResponse response) {
+        User user = accountService.validateToken(token);
+        if (user == null) {
+            response.setStatus(401);
+            return;
+        }
+
+        Cookie cookie = new Cookie("token", token);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+        return;
+    }
+
 }

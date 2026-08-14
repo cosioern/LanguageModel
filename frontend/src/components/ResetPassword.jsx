@@ -1,6 +1,7 @@
 import "./ResetPassword.css";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import ToggleTheme from "./ToggleTheme";
 
 function ResetPassword() {
@@ -9,9 +10,10 @@ function ResetPassword() {
     const [retype, setRetype] = useState("");
     const [status, setStatus] = useState("");
     const [searchParams] = useSearchParams();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmedPassword, setShowConfirmedPassword] = useState(false);
     const token = searchParams.get("token");
 
-    
     async function handleSubmit(e) {
         e.preventDefault();
         if (!password) {setStatus("Enter a password"); return;}
@@ -28,7 +30,7 @@ function ResetPassword() {
             body: formData,
         });
 
-        if (false) {
+        if (res.ok) {
             navigate("/chat")
         } else {
             setStatus("Unable To Reset Password")
@@ -39,19 +41,34 @@ function ResetPassword() {
         <div className="reset-page">
             <form className="reset-card" onSubmit={handleSubmit}>
                 <h1>Set a New Password</h1>
+                <div className="eye">
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="Password">
+                    </input>
+                    <button 
+                        type="button" 
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <EyeOff size={18}/> : <Eye size={18} />}
+                    </button>
+                </div>
+                <div className="eye">
                 <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="Password">
-                </input>
-                <input
-                    type="password"
+                    type={showConfirmedPassword ? "text" : "password"}
                     value={retype}
                     onChange={e => setRetype(e.target.value)}
                     placeholder="Retype Your Password">
                 </input>
-
+                <button
+                    type="button"
+                    onClick={() => setShowConfirmedPassword(!showConfirmedPassword)}
+                >
+                    {showConfirmedPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+                </div>
                 <button type="submit">Submit</button>
                 {status && <p className="status">{status}</p>}
             </form>

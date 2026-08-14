@@ -5,7 +5,6 @@
   flex-direction: column;
 
   position:fixed;
-  /* height:100vh; */
   top:20px;
   bottom:20px;
   box-sizing:border-box;
@@ -15,7 +14,6 @@
 
   top:20px;
   right:20px;
-  /* gap:12px; */
 
   justify-content: space-between;
 }
@@ -28,8 +26,7 @@
 
 .button-holder {
   display: flex; 
-  /* position: fixed; */
-  flex-direction: row; /* stack below; use "row" for side-by-side */
+  flex-direction: row;
   gap: 10px;
 
 }
@@ -37,7 +34,8 @@
 .login-button,
 .signin-button,
 .share-button,
-.theme-button {
+.theme-button,
+.logout {
   padding: 8px 16px;
   border-radius: 999px;
   border: none;
@@ -47,7 +45,7 @@
   transition: background-color 1s ease, color 1s ease;
 }
 
-.login-button {
+.login-button, .logout {
   background: black;
   color: white;
 }
@@ -63,7 +61,8 @@
   padding: 8px 22px;
 }
 
-.login-button:hover {
+.login-button:hover,
+.logout:hover {
   opacity: 0.7;
 }
 .signin-button:hover {
@@ -75,7 +74,8 @@
   opacity: 0.8;
 }
 
-body.dark .login-button {
+body.dark .login-button, 
+body.dark .logout {
   background: white;
   color: black;
 }
@@ -90,10 +90,9 @@ body.dark .share-button {
   color: #062b45;
 }
 
+body.dark .login-button:hover,
 body.dark .login-button:hover {
   opacity: 0.8;
-  /* background: white;
-  color: black; */
 }
 
 body.dark .signin-button:hover {

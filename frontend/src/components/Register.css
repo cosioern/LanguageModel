@@ -3,7 +3,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* transition: background-color 1s ease, color 1s ease; */
 }
 
 .register-card {
@@ -20,15 +19,12 @@
 
 .register-card h1 {
     margin: 0;
-    /* text-align: center; */
     font-size: 2.5rem;
     line-height: 1.6;
     transition: background-color 1s ease, color 1s ease;
 }
 
 .register-card p {
-    /* text-align: center; */
-    /* color: #666; */
     line-height: 1.4;
     transition: background-color 1s ease, color 1s ease;
 }
@@ -41,7 +37,7 @@
     transition: background-color 1s ease, color 1s ease;
 }
 
-.register-card button {
+.register-card button[type="submit"] {
     padding: 12px;
     border-radius: 10px;
     border: none;
@@ -49,16 +45,23 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
-    /* transition: background-color 1s ease, color 1s ease; */
 }
 
-.register-card button:hover {
+.register-card button[type="submit"]:hover {
     background: #5563c1;
+}
+
+.register-card button[type="button"] {
+    border: none;
+    background: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .status {
     color: red;
-    /* transition: background-color 1s ease, color 1s ease; */
     transform: translateY(10px);
 }
 
@@ -67,11 +70,9 @@
 body.dark .register-card {
     background: transparent;
     box-shadow: 0 15px 35px rgba(0, 0, 0, .5);
-    /* transition: background-color 1s ease, color 1s ease; */
 }
 
 body.dark .register-card p {
-    /* color: #94a3b8; */
     color: #a1a1aa;
 }
 
@@ -81,15 +82,12 @@ body.dark .register-card input {
     border: 1px solid #52525b;
 }
 
-body.dark .register-card button {
-    /* background: #6366f1;
-    color: #fff; */
+body.dark .register-card button[type="submit"] {
     background: #d4d4d8;
     color: #18181b;
 }
 
-body.dark .register-card button:hover {
-    /* background: #4f46e5; */
+body.dark .register-card button[type="submit"]:hover {
     background: #f7f7fb;
 }
 

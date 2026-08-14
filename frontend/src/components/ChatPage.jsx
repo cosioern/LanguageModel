@@ -20,7 +20,7 @@ function ChatPage({initialPrompt, chatHistory}) {
     const fileInputRef = useRef(null);
     const [toast, setToast] = useState(null);
     const [isStreaming, setIsStreaming] = useState(false);
-    const [isLogginIn, setLoggedIn] = useState(false);
+    const [isLoggedIn, setLoggedIn] = useState(false);
 
 
     // load chat history on refresh
@@ -233,7 +233,7 @@ function ChatPage({initialPrompt, chatHistory}) {
     // assembled html page
     return (
         <div className="page">
-            <Left isLoggedIn={isLogginIn} />
+            <Left isLoggedIn={isLoggedIn} />
             <Middle
                 messages={messages}
                 prompt={prompt}
@@ -247,7 +247,7 @@ function ChatPage({initialPrompt, chatHistory}) {
                 handleFileUpload={handleFileUpload}
                 isStreaming={isStreaming}
             />
-            <Right />
+            <Right isLoggedIn={isLoggedIn}/>
 
             {toast && (
                 <div className={`toast toast-${toast.type}`}>

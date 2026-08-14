@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Eye, EyeOff } from "lucide-react";
 import ToggleTheme from "./ToggleTheme";
 import "./Register.css"
 
@@ -8,6 +9,7 @@ function Register() {
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [birthDate, setBirthDate] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const [status, setStatus] = useState(null);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -83,14 +85,20 @@ function Register() {
                     >
 
                 </input>
-
-                <input
-                    type="password"
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                    placeholder="Password">
-                </input>
-
+                <div className="eye">
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        value={password} 
+                        onChange={e => setPassword(e.target.value)} 
+                        placeholder="Password">
+                    </input>
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <EyeOff size={18}/> : <Eye size={18} /> }
+                    </button>
+                </div>
                 <button type="submit">Register</button>
 
                 {status && <p className="status">{status}</p>}

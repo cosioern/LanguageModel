@@ -21,14 +21,12 @@
 
 .login-card h1 {
     margin: 0;
-    /* text-align: center; */
     font-size: 2.5rem;
     line-height: 1.6;
     transition: background-color 1s ease, color 1s ease;
 }
 
 .login-card p {
-    /* text-align: center; */
     color: #666;
     line-height: 1.4;
     transition: background-color 1s ease, color 1s ease;
@@ -42,21 +40,35 @@
     transition: background-color 1s ease, color 1s ease;
 }
 
-.login-card button {
+.login-card button[type="button"] {
+    border: none;
+    background: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.login-card button[type="button"]:hover {
+    background: none;
+}
+
+.login-card button[type="submit"] {
     padding: 12px;
     border-radius: 10px;
     border: none;
     background: #667eea;
-    /* background: #0f766e; */
     color: white;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 1s ease, color 1s ease;
 }
 
 .login-card button:hover {
     background: #5563c1;
-    /* background: #115e59; */
+}
+
+.login-card .reset-link {
+    border: none;
 }
 
 .login-card .status {
@@ -93,12 +105,12 @@ body.dark .login-card input {
     border: 1px solid #52525b;
 }
 
-body.dark .login-card button {
+body.dark .login-card button[type="submit"] {
     background: #d4d4d8;
     color: #18181b;
 }
 
-body.dark .login-card button:hover {
+body.dark .login-card button[type="submit"]:hover {
     background: #f7f7fb;
 }
 
@@ -108,7 +120,7 @@ body.dark .login-card .status {
 
 body.dark .login-card .reset-link {
     background: none;
-    color: #667eea; /* or whatever link color fits your palette */
+    color: #667eea;
     text-decoration: underline;
     cursor: pointer;
 }
