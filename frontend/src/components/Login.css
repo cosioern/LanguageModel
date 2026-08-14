@@ -40,7 +40,8 @@
     transition: background-color 1s ease, color 1s ease;
 }
 
-.login-card button[type="button"] {
+/* .login-card button[type="button"] { */
+.login-card .button {
     border: none;
     background: none;
     position: absolute;
@@ -49,7 +50,8 @@
     transform: translateY(-50%);
 }
 
-.login-card button[type="button"]:hover {
+/* .login-card button[type="button"]:hover { */
+.login-card .button:hover {
     background: none;
 }
 
@@ -112,6 +114,10 @@ body.dark .login-card button[type="submit"] {
 
 body.dark .login-card button[type="submit"]:hover {
     background: #f7f7fb;
+}
+
+body.dark .login-card .button {
+    color: white;
 }
 
 body.dark .login-card .status {
