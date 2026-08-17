@@ -51,6 +51,7 @@ function Login() {
                     />
                     <button
                         type="button"
+                        className="button"
                         onClick={() => setShowPassword(!showPassword)}
                     >
                         {showPassword ? <EyeOff size={18}/> : <Eye size={18} /> }
@@ -59,7 +60,7 @@ function Login() {
                 <button type="submit">Login</button>
 
                 {status && <p className="status">{status}</p>}
-                <button className="reset-link" onClick={() => navigate("/forgot-password")}>Forgot Your Password?</button>
+                <button type="button" className="reset-link" onClick={() => navigate("/forgot-password")}>Forgot Your Password?</button>
             </form>
             <ToggleTheme/>
         </div>
