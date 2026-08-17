@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,8 +53,9 @@ public class Controller {
      * history is found, client-side immediately transitions to page dispalying chat.
      * Otherwise frontend flow proceeds as currently is.
      * 
-     * @param guestID is a cookie that identfies the user
-     * @param response allows for cookies to be sent
+     * @param guestID   session identifier for a Guest
+     * @param token     session identifier JWT token for a User
+     * @param response  allows for cookies to be sent
      * @return
      */
     @GetMapping("/load")
@@ -84,8 +86,8 @@ public class Controller {
      * Calls {@link ChatService#generate(String, UUID)}
      * 
      * @param prompt    to be sent to the LM
-     * @param guestID   is a cookie that identifies the user
-     * @param token     JWT token to act as user/session identifier
+     * @param guestID   session identifier for a Guest
+     * @param token     session identifier JWT token for a User
      * @param response  allows for cookies to be sent
      * @return
      */
@@ -118,9 +120,10 @@ public class Controller {
     /**
      * Endpoint responsible handling a document upload and updating cookie.
      * 
-     * @param file to upload as a set of embeddings
-     * @param guestID to associate file upload with
-     * @param response to return with refreshed cookie
+     * @param file      to upload as a set of embeddings
+     * @param guestID   session identifier for a Guest
+     * @param token     session identifier JWT token for a User
+     * @param response  to return with refreshed cookie
      */
     @PostMapping("/embedDocument")
     public void embedDocument(@RequestParam(value="document") MultipartFile file, 
@@ -216,7 +219,7 @@ public class Controller {
      * Endpoint for handing over account details.
      * Details are for display on frontend Profile page.
      * 
-     * @param token     is the session identifier JWT token
+     * @param token     session identifier JWT token for a User
      * @param response  contains the cookie
      * @return          mapping of account details
      */
@@ -227,7 +230,7 @@ public class Controller {
 
         Map<String, String> details = accountService.accountDetails(user.getID());
         if (details == null) {
-            response.setStatus(401);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
                 
@@ -248,7 +251,7 @@ public class Controller {
      * Endpoint to determine if a client is a User or a Guest.
      * Used to determine where certain buttons, like Profile or SignUp, redirect.
      * 
-     * @param token     JWT token to act as user session identifier
+     * @param token     session identifier JWT token for a User
      * @return          true if client is a user, false otherwise
      */
     @GetMapping("/authStatus")
@@ -294,6 +297,13 @@ public class Controller {
         response.addCookie(generateCookie(token));
     }
 
+    /**
+     * Endpoint to logout a User, replacing the session cookie in their browser
+     * with one that expires immediately.
+     * 
+     * @param token     session identifier JWT token for a User
+     * @param response  containing expiring cookie
+     */
     @PostMapping("/logout")
     public void logout(@CookieValue(value = "token", required = true) String token, HttpServletResponse response) {
         User user = accountService.validateToken(token);
@@ -310,4 +320,46 @@ public class Controller {
         return;
     }
 
+    /**
+     * Assemble and return a list of documentID-filename pairs for 
+     * all the documents uploaded by a User. The documentID is used by
+     * the frontned to identify Documents signaled for deletion.
+     * 
+     * @param token     session identifier JWT token for a User
+     * @param response  containing cookie and status code
+     * @return          a FileRecord list
+     */
+    @GetMapping("/documents")
+    public List<FileRecord> documents(@CookieValue(value = "token", required = true) String token, HttpServletResponse response) {
+        User user = accountService.validateToken(token);
+        if (user == null) {response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); return List.of();}
+        List<FileRecord> fileRecords = embeddingService.getDocumentNames(user);
+        return fileRecords;
+    }
+
+    /**
+     * Endpoint to make the proper calls for document and chunk deletion.
+     * 
+     * @param token         session identifier JWT token for a User
+     * @param documentID    identifies the document and chunks for deletion
+     * @param response      contains session cookie and status code
+     */
+    @DeleteMapping("/deleteDocument")
+    public void deleteDocument(
+        @CookieValue(value = "token", required = true) String token,
+        @RequestParam(value = "documentID", required = true) UUID documentID,
+        HttpServletResponse response) {
+
+            User user = accountService.validateToken(token);
+            if (user == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
+            if (!embeddingService.deleteDocument(user, documentID)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            }
+
+            return;
+    }
 }

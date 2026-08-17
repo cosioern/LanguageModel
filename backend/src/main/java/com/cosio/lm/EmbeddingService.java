@@ -2,6 +2,7 @@ package com.cosio.lm;
 
 import java.util.Map;
 import java.util.UUID;
+// import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,22 +13,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class EmbeddingService {
     
     /** client used to call microservice on localhost port 8000 */
     private final WebClient client;
     /** holds chunks of text, tied to a document and a guest */
-    private final ChunkRepository repo;
-
+    private final ChunkRepository chunkRepo;
+    /** query documents by account, getting id and */
+    private final DocumentRepository docRepo;
 
     /**
      * Constructor, autoinjection
      * @param client used to communicate with micro-service endpoints
      */
-    public EmbeddingService(WebClient client, ChunkRepository repo) {
+    public EmbeddingService(WebClient client, ChunkRepository chunkRepo, DocumentRepository docRepo) {
         this.client = client;
-        this.repo = repo;
+        this.chunkRepo = chunkRepo;
+        this.docRepo = docRepo;
     }
     
     /**
@@ -69,14 +74,15 @@ public class EmbeddingService {
         
 
         // package chunks and save to persistence
-        UUID documentID = UUID.randomUUID();
-
+        // UUID documentID = UUID.randomUUID();
+        Document doc = new Document(file.getOriginalFilename(), account);
+        docRepo.save(doc);
         List<Chunk> chunks = new ArrayList<Chunk>();
         for(EmbeddedChunk e : embeddings) {
-            chunks.add(new Chunk(e.content(), e.embedding(), documentID, account));
+            // chunks.add(new Chunk(e.content(), e.embedding(), documentID, account));
+            chunks.add(new Chunk(e.content, e.embedding(), doc.getID(), account));
         }
-        repo.saveAll(chunks);
-
+        chunkRepo.saveAll(chunks);
         return;
     }
 
@@ -89,13 +95,48 @@ public class EmbeddingService {
      */
     public List<String> similaritySearch(float[] promptVector, Account account) {
         
-        List<Chunk> chunks = repo.findSimilarChunks(account.getID(), promptVector, 3);
+        List<Chunk> chunks = chunkRepo.findSimilarChunks(account.getID(), promptVector, 3);
         List<String> results = new ArrayList<String>();
         for (Chunk c : chunks) {
             results.add(c.getContent());
         }
 
         return results;
+    }
+
+    /**
+     * Produce list of details for each document
+     * that a user has uploaded to persistence.
+     * 
+     * @param account   of the user looking up their documents
+     * @return          a list of FileRecords (accountID, filename)
+     */
+    public List<FileRecord> getDocumentNames(Account account) {
+        List<FileRecord> fileRecords = new ArrayList<>();
+        for (Document doc : docRepo.findByAccount(account)) {
+            fileRecords.add(new FileRecord(doc.getID(), doc.getFilename()));
+        }
+        
+        return fileRecords;
+    }
+
+    /**
+     * Remove a document and its associated chunks from persistence.
+     * 
+     * @param account       the document should belong to
+     * @param documentID    identifies the chunks and document for deletion
+     * @return              true if successful, false otherwise
+     */
+    @Transactional
+    public boolean deleteDocument(Account account, UUID documentID) {
+        Document doc = docRepo.findById(documentID).orElse(null);
+        if ((doc == null) || !(doc.getAccount().getID().equals(account.getID()))) 
+            return false;
+
+        chunkRepo.deleteAllByDocumentID(documentID);
+        docRepo.delete(doc);
+        
+        return true;
     }
 
     private record EmbeddedChunk(String content, float[] embedding) {}

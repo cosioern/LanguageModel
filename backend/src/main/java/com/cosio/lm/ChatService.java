@@ -257,9 +257,4 @@ public class ChatService {
         Messages msg = new Messages(convo, role, content);
         return msgRepo.save(msg);
     }
-
-    // private List<Messages> findMessages(Conversations convo) {
-    //     return msgRepo.findByConversations(convo);
-    // }
-
 }

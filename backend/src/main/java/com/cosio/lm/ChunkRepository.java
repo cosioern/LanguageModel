@@ -12,4 +12,5 @@ public interface ChunkRepository extends JpaRepository<Chunk, UUID>{
 
     List<Chunk> findByAccount(Account account);
     void deleteByAccount(Account account);
+    void deleteAllByDocumentID(UUID documentID);
 }

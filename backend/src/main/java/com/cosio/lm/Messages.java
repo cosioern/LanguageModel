@@ -27,8 +27,6 @@ public class Messages {
     @UuidGenerator
     private UUID messageID;
 
-    // @Column(nullable = false)
-    // private UUID conversationID;
     @ManyToOne(optional = false)
     @JoinColumn(name = "conversationID")
     private Conversations conversations;

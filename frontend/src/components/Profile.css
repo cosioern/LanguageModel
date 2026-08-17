@@ -2,12 +2,14 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    flex-direction: column;
     align-items: center;
-    /* background: #f4f7fb; */
     padding: 30px;
+    gap: 2rem;
 }
 
-.profile-card {
+.profile-card,
+.doc-card {
     width: 400px;
     background: white;
     border-radius: 20px;
@@ -16,7 +18,8 @@
     transition: background-color 1s ease, color 1s ease;
 }
 
-.profile-card h1 {
+.profile-card h1,
+.doc-card h1 {
     margin: 0 0 30px;
     text-align: center;
     font-size: 2rem;
@@ -24,7 +27,8 @@
     transition: background-color 1s ease, color 1s ease;
 }
 
-.profile-info {
+.profile-info,
+.doc-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -32,11 +36,19 @@
     border-bottom: 1px solid #ececec;
 }
 
-.profile-info:last-child {
+.doc-card .empty {
+    color: #666;
+    margin-top: 40px;
+    font-size: 20px;
+}
+
+.profile-info:last-child,
+.doc-info:last-child {
     border-bottom: none;
 }
 
-.label {
+.label,
+.doc-info {
     font-weight: 600;
     color: #666;
     font-size: 0.95rem;
@@ -50,19 +62,29 @@
     word-break: break-word;
 }
 
+.trash {
+    color: rgb(255, 0, 0);
+}
+
+.trash:hover {cursor: pointer;}
+
 /* Dark Mode Decorations */
 
-body.dark .profile-card {
+body.dark .profile-card,
+body.dark .doc-card {
     background: transparent;
     box-shadow: 0 15px 35px rgba(0, 0, 0, .5);
 }
 
-body.dark .profile-card h1 {
+body.dark .profile-card h1,
+body.dark .doc-card h1 {
     /* color:black; */
     color: #f1f5f9;
 }
 
-body.dark .label {
+body.dark .label,
+body.dark .doc-info,
+body.dark .doc-card p {
     /* color: rgb(172, 172, 172); */
     color: #94a3b8;
 }
