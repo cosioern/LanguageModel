@@ -20,7 +20,6 @@ import com.cosio.lm.AccountService.UsernameTakenException;
 import com.cosio.lm.AccountService.VerificationLinkException;
 
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import reactor.core.publisher.Flux;
 
@@ -274,6 +273,7 @@ public class Controller {
 
     /**
      * Handle changing a password and returning a user session identifier
+     * for a non-logged-in user.
      * 
      * @param resetToken    validates that the user is coming from a server-generated link
      * @param password      is the new password to persist
@@ -356,11 +356,12 @@ public class Controller {
     }
 
     /**
+     * Endpoint to change passwords for logged-in (authenticated) users.
      * 
-     * @param token
-     * @param currentPassword
-     * @param newPassword
-     * @param response
+     * @param token             session identifier JWT token for a User
+     * @param currentPassword   to authenticate user
+     * @param newPassword       to update password
+     * @param response          carries session cookie
      */
     @PostMapping("/changePassword")
     public void changePassword(
