@@ -1,39 +1,73 @@
 import "./ResetPassword.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import ToggleTheme from "./ToggleTheme";
 
 function ResetPassword() {
     const navigate = useNavigate();
-    const [password, setPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [showNewPassword, setShowNewPassword] = useState(false);
     const [retype, setRetype] = useState("");
+    const [showConfirmedPassword, setShowConfirmedPassword] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [status, setStatus] = useState("");
     const [searchParams] = useSearchParams();
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmedPassword, setShowConfirmedPassword] = useState(false);
     const token = searchParams.get("token");
+    const [toast, setToast] = useState(null);
+
+    useEffect(() => {
+        if (!toast) return;
+
+        const timer = setTimeout(() => {
+            setToast(null);
+        }, 3000);
+        return () => {clearTimeout(timer); navigate("/chat");}
+        }, [toast])
 
     async function handleSubmit(e) {
         e.preventDefault();
-        if (!password) {setStatus("Enter a password"); return;}
-        if (!retype) {setStatus("Retype Your Password"); return;}
-        if (password !== retype) {setStatus("Passwords Must Match"); return;}
+        let res;
         const formData = new URLSearchParams();
+        console.log("token:", token);
+        if (token) {
+            if (!newPassword) {setStatus("Enter a password"); return;}
+            if (!retype) {setStatus("Retype Your Password"); return;}
+            if (newPassword !== retype) {setStatus("Passwords Must Match"); return;}
+            formData.append("newPassword", newPassword);
 
-        formData.append("password", password);
+            res = await fetch(`http://localhost:8080/resetPassword?token=${encodeURIComponent(token)}`, {
+                method: "POST",
+                credentials: "include",
+                headers: {"Content-type" : "application/x-www-form-urlencoded"},
+                body: formData,
+            });
+        } 
+        else {
+            if (!newPassword) {setStatus("Enter a password"); return;}
+            if (!retype) {setStatus("Retype Your Password"); return;}
+            if (newPassword !== retype) {setStatus("Passwords Must Match"); return;}
+            if (!currentPassword) {setStatus("Enter your current password"); return;}
 
-        const res = await fetch(`http://localhost:8080/resetPassword?token=${encodeURIComponent(token)}`, {
-            method: "POST",
-            credentials: "include",
-            headers: {"Content-type" : "application/x-www-form-urlencoded"},
-            body: formData,
-        });
+            formData.append("newPassword", newPassword);
+            formData.append("currentPassword", currentPassword);
+
+            res = await fetch(`http://localhost:8080/changePassword`, {
+                method: "POST",
+                credentials: "include",
+                headers: {"Content-type" : "application/x-www-form-urlencoded"},
+                body: formData,
+            });
+        }
 
         if (res.ok) {
-            navigate("/chat")
+            // navigate("/chat");
+            setToast({message: "Success. Redirecting to chat page.", type: "success"});
+        } else if (res.status === 403) {
+            setStatus("Wrong password");
         } else {
-            setStatus("Unable To Reset Password")
+            setStatus("Unable to update password");
         }
     }
 
@@ -43,34 +77,52 @@ function ResetPassword() {
                 <h1>Set a New Password</h1>
                 <div className="eye">
                     <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        placeholder="Password">
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        placeholder="Select a New Password">
                     </input>
                     <button 
                         type="button" 
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => setShowNewPassword(!showNewPassword)}
                     >
-                        {showPassword ? <EyeOff size={18}/> : <Eye size={18} />}
+                        {showNewPassword ? <EyeOff size={18}/> : <Eye size={18} />}
                     </button>
                 </div>
                 <div className="eye">
-                <input
-                    type={showConfirmedPassword ? "text" : "password"}
-                    value={retype}
-                    onChange={e => setRetype(e.target.value)}
-                    placeholder="Retype Your Password">
-                </input>
-                <button
-                    type="button"
-                    onClick={() => setShowConfirmedPassword(!showConfirmedPassword)}
-                >
-                    {showConfirmedPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                    <input
+                        type={showConfirmedPassword ? "text" : "password"}
+                        value={retype}
+                        onChange={e => setRetype(e.target.value)}
+                        placeholder="Retype Your New Password">
+                    </input>
+                    <button
+                        type="button"
+                        onClick={() => setShowConfirmedPassword(!showConfirmedPassword)}
+                    >
+                        {showConfirmedPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                 </div>
+                {!token ? 
+                (<div className="eye">
+                    <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={e => setCurrentPassword(e.target.value)}
+                        placeholder = "Enter Your Current Password">
+                    </input>
+                    <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    >
+                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                </div>) : (<></>)}
                 <button type="submit">Submit</button>
                 {status && <p className="status">{status}</p>}
+                {toast && (<div className={`toast toast-${toast.type}`}>
+                    {toast.message}
+                </div>)}
             </form>
             <ToggleTheme/>
         </div>

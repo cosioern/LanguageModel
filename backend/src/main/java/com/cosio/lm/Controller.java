@@ -20,6 +20,7 @@ import com.cosio.lm.AccountService.UsernameTakenException;
 import com.cosio.lm.AccountService.VerificationLinkException;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import reactor.core.publisher.Flux;
 
@@ -239,14 +240,6 @@ public class Controller {
         return details;
     }
 
-    private Cookie generateCookie(String token) {
-        Cookie cookie = new Cookie("token", token);
-        cookie.setPath("/");
-        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
-        cookie.setHttpOnly(true);
-        return cookie;
-    }
-
     /**
      * Endpoint to determine if a client is a User or a Guest.
      * Used to determine where certain buttons, like Profile or SignUp, redirect.
@@ -288,12 +281,11 @@ public class Controller {
      */
     @PostMapping("/resetPassword")
     public void resetPassword(@RequestParam(value="token") UUID resetToken,
-        @RequestParam(value="password") String newPassword, 
+        @RequestParam(value="newPassword") String newPassword, 
         HttpServletResponse response) {
 
         String token = accountService.changePassword(newPassword, resetToken);
         if (token == null) {response.setStatus(401); return;}
-
         response.addCookie(generateCookie(token));
     }
 
@@ -361,5 +353,37 @@ public class Controller {
             }
 
             return;
+    }
+
+    /**
+     * 
+     * @param token
+     * @param currentPassword
+     * @param newPassword
+     * @param response
+     */
+    @PostMapping("/changePassword")
+    public void changePassword(
+        @CookieValue(value = "token", required = true) String token,
+        @RequestParam(value = "currentPassword", required = true) String currentPassword,
+        @RequestParam(value = "newPassword", required = true) String newPassword,
+        HttpServletResponse response) {
+
+        User user = accountService.validateToken(token);
+        if (user == null) {response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);}
+
+        if (!accountService.updatePassword(currentPassword, newPassword, user)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        }
+        response.addCookie(generateCookie(token));
+        return;
+    }
+
+    private Cookie generateCookie(String token) {
+        Cookie cookie = new Cookie("token", token);
+        cookie.setPath("/");
+        cookie.setMaxAge((int)Duration.ofDays(2).toSeconds());
+        cookie.setHttpOnly(true);
+        return cookie;
     }
 }

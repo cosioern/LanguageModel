@@ -269,6 +269,18 @@ public class AccountService {
         return token;
     }
 
+    public boolean updatePassword(String currentPassword, String newPassword, User user) {
+        if (!encoder.matches(currentPassword, user.getPassword())) {
+            return false;
+        }
+        
+        String hash = encoder.encode(newPassword);
+        user.setPassword(hash);
+        userRepo.save(user);
+
+        return true;
+    }
+
     protected class UsernameTakenException extends Exception {
         public UsernameTakenException() {
             super("This username is taken");

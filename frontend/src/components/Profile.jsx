@@ -1,11 +1,12 @@
 import {useState, useEffect} from "react"
 import ToggleTheme from "./ToggleTheme";
 import { Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "./Profile.css"
 
 
 function Profile() {
-
+    const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [birthday, setBirthday] = useState("");
@@ -128,6 +129,10 @@ function Profile() {
                 <div className="profile-info">
                     <span className="label">Birthday</span>
                     <span className="value">{birthday}</span>
+                </div>
+
+                <div className="password-change">
+                    <button type="button" onClick={() => navigate("/reset-password")}>Change Password</button>
                 </div>
             </div>
             <div className="doc-card">
