@@ -59,8 +59,8 @@ public class LmApplication {
     }
 
 	/**
-	 * WebClient to access microservices
-	 * @return
+	 * WebClient to access FastAPI microservices on port 8000
+	 * @return a WebClient instance
 	 */
 	@Bean
     WebClient llmWebClient() {

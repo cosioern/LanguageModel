@@ -58,10 +58,10 @@ public class AccountService {
      * Walks back changes if verification link fails to send.
      * 
      * @param username  requested by user
-     * @param email     requiested to be used to verify account
-     * @param password  requested to authenticate access
-     * @param birthDate user's birthday
-     * @param name      user's name
+     * @param email     to be used to verify account
+     * @param password  to authenticate access to account
+     * @param birthDate is the user's birthday
+     * @param name      is the user's name
      * @return          a UUID to be compared against token in link
      * 
      * @throws UsernameTakenException       if requested username is taken
@@ -241,6 +241,7 @@ public class AccountService {
     }
 
     /**
+     * Change password - email pipeline.
      * If token has not expired, hash and persist user's new password.
      * Build session token for user.
      * 
@@ -269,6 +270,16 @@ public class AccountService {
         return token;
     }
 
+    /**
+     * Change password - logged-in pipeline.
+     * First checks if currentPassword matches the persisted hashed password,
+     * then hashes and persists the new password.
+     * 
+     * @param currentPassword   is used to authenticate the User
+     * @param newPassword       is persisted to the User account
+     * @param user              to change the password of
+     * @return                  true if successful
+     */
     public boolean updatePassword(String currentPassword, String newPassword, User user) {
         if (!encoder.matches(currentPassword, user.getPassword())) {
             return false;
