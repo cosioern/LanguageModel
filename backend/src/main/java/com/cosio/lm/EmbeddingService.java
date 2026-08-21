@@ -53,7 +53,8 @@ public class EmbeddingService {
     }
 
     /**
-     * Embed a document and save it as chunks
+     * Send a file to the FastAPI microservice for embedding.
+     * Save document and embedded chunks to persistence.
      * 
      * @param file
      * @return
@@ -138,5 +139,5 @@ public class EmbeddingService {
         return true;
     }
 
-    private record EmbeddedChunk(String content, float[] embedding) {}
+    protected record EmbeddedChunk(String content, float[] embedding) {}
 }
