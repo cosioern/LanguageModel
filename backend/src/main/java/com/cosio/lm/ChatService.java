@@ -118,11 +118,6 @@ public class ChatService {
      * @return a chat history, or nothing if a conversation is not found
     */
     public List<ChatMessage> getHistory(Account account) {
-
-        // read cookie, retrieve proper guest / conversation
-        // if (accountID == null) return List.of();
-        // Guest g = findGuest(accountID);
-        // if (g == null) return List.of();
         if (account == null) return List.of();
         updateLastSeen(account);
         
@@ -131,7 +126,6 @@ public class ChatService {
 
         // retrieve messages
         List<Messages> msgs = msgRepo.findByConversationsOrderByCreatedAtAsc(convo);
-        // if (msgs.isEmpty()) return new ArrayList<ChatMessage>();
 
         // package chat history into DTO and return
         List<ChatMessage> history = new ArrayList<ChatMessage>();

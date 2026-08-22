@@ -4,6 +4,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Instant;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,7 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -356,7 +358,83 @@ public class ServiceTests {
 
         cs.generate(prompt, account).collectList().block();
         Mockito.verify(messageRepo, Mockito.times(2)).save(Mockito.any(Messages.class));
-    
     }
 
+    @Test
+    public void testGetHistory() {
+        assertTrue(cs.getHistory(null).isEmpty());
+        Account account = Mockito.mock(Account.class);
+        Mockito.when(convoRepo.findByAccount(account)).thenReturn(Optional.empty());
+        assertTrue(cs.getHistory(account).isEmpty());
+        Mockito.verify(accountRepo).save(account);
+
+        Conversations conversation = Mockito.mock(Conversations.class);
+        Mockito.when(convoRepo.findByAccount(account)).thenReturn(Optional.of(conversation));
+        List<Messages> messages = List.of(new Messages(conversation, Role.USER, "content"));
+        Mockito.when(messageRepo.findByConversationsOrderByCreatedAtAsc(conversation)).thenReturn(messages);
+        assertFalse(cs.getHistory(account).isEmpty());
+        Mockito.verify(accountRepo, Mockito.times(2)).save(account);
+    }
+
+    @Test
+    public void clearStaleGuests() {
+        Guest g = Mockito.mock(Guest.class);
+        Mockito.when(guestRepo.findByLastUpdatedAtBefore(Mockito.any(Instant.class))).thenReturn(List.of());
+        cs.clearStaleGuests();
+        Mockito.verify(chunkRepo, Mockito.never()).deleteByAccount(g);
+
+        Conversations c = Mockito.mock(Conversations.class);
+        Mockito.when(guestRepo.findByLastUpdatedAtBefore(Mockito.any(Instant.class))).thenReturn(List.of(g));
+        Mockito.when(convoRepo.findByAccount(g)).thenReturn(Optional.of(c));
+
+        cs.clearStaleGuests();
+        Mockito.verify(chunkRepo, Mockito.times(1)).deleteByAccount(g);
+        Mockito.verify(messageRepo, Mockito.times(1)).deleteAllByConversations(c);
+        Mockito.verify(convoRepo, Mockito.times(1)).delete(c);
+        Mockito.verify(guestRepo, Mockito.times(1)).delete(g);
+    }
+
+    @Test
+    public void testClearUnvalidatedUsers() {
+
+        User user = Mockito.mock(User.class);
+        Mockito.when(userRepo.findByVerified(false)).thenReturn(List.of());
+        cs.clearUnvalidatedUsers();
+        Mockito.verify(userRepo, Mockito.never()).delete(user);
+
+        Mockito.when(userRepo.findByVerified(false)).thenReturn(List.of(user));
+        Instant instant = Mockito.mock(Instant.class);
+        Mockito.when(user.getCreatedAt()).thenReturn(instant);
+        Mockito.when(user.getCreatedAt().isBefore(Mockito.any(Instant.class))).thenReturn(true);
+        cs.clearUnvalidatedUsers();
+        Mockito.verify(userRepo, Mockito.times(1)).delete(user);
+    }
+
+    @Test
+    public void testFindGuest() {
+        UUID guestID = UUID.randomUUID();
+        Guest guest = Mockito.mock(Guest.class);
+        Mockito.when(guestRepo.findById(guestID)).thenReturn(Optional.empty());
+        assertNull(cs.findGuest(guestID));
+
+        Mockito.when(guestRepo.findById(guestID)).thenReturn(Optional.of(guest));
+        assertNotNull(cs.findGuest(guestID));
+    }
+
+    @Test
+    public void testResolveGuest() {
+        UUID guestID = UUID.randomUUID();
+        Guest guest = Mockito.mock(Guest.class);
+
+        assertNotEquals(guest, cs.resolveGuest(null));
+        Mockito.verify(guestRepo, Mockito.times(1)).save(Mockito.any(Guest.class));
+        
+        Mockito.when(guestRepo.findById(guestID)).thenReturn(Optional.of(guest));
+        assertEquals(guest, cs.resolveGuest(guestID));
+        Mockito.verify(guestRepo, Mockito.times(1)).save(Mockito.any(Guest.class));
+
+        Mockito.when(guestRepo.findById(guestID)).thenReturn(Optional.empty());
+        assertNotEquals(guest, cs.resolveGuest(guestID));
+        Mockito.verify(guestRepo, Mockito.times(2)).save(Mockito.any(Guest.class));
+    }
 }
