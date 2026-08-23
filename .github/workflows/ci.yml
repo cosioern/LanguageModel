@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    if: github.event.repository != null
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses:  actions/checkout@v4
+        with:
+          # only proceed if backend files changed, 
+          # handled below via paths filter instead
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distributions: temurin
+          java-version: '21'
+      - name: Run tests
+        run: ./gradlew test
