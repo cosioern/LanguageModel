@@ -14,5 +14,8 @@ train:
 pull:
 	$(PYTHON) pullExamples.py
 
+pre:
+	$(PYTHON) preprocessor.py
+
 microservice:
 	uvicorn microservice:app --host 0.0.0.0 --port 8000	

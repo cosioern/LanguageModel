@@ -9,7 +9,8 @@ I recommend setting up a Conda environment like so:
  - pip install pymupdf transformers datasets peft trl accelerate bitsandbytes
  - pip install torch --index-url https://download.pytorch.org/whl/cu121
  - (no longer recommend) ~~pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu128~~
- - pip install fastapi uvicorn python-docx llama-index sentence-transformers python-multipart  
+ - pip install fastapi uvicorn python-docx llama-index sentence-transformers python-multipart
+ - pip install google-genai  
 
 Python 3.11 version is the newest that will most reliably work with the necessary dependencies. This torch build is geared towards allowing PyTorch to make use of CUDA cores on NVidia GPUs, tried on RTX3060ti. You're mileage will vary with different hardware.
 
@@ -21,7 +22,8 @@ Spring Boot don't require any special setup.
 
 For React:
  - npm install react-router-dom
- - npm install lucide-react
+ - npm install lucide-
+ - npm install - vitest @testing-library/react @testing-library/jest-dom jsdom
 
 Set the Environment Variables:
    - MOCK_MODE       (microservice.py)    determines if LM is used to generate responses
