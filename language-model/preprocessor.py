@@ -38,7 +38,7 @@ def is_noise(text):
 
     return any(re.search(p, text, re.I) for p in patterns)
 
-def split_paragraph(text, max_len=3000):
+def split_paragraph(text, max_len=1000):
     sentences = re.split(r'(?<=[.!?])\s+', text)
     chunks = []
     current = ""
@@ -57,10 +57,11 @@ def split_paragraph(text, max_len=3000):
 client = genai.Client()
 Prompt = """Generate one question that can be answered completely and directly using only the following text. 
 The question should target the main idea or a key fact in the text. Do not ask about information that is not explicitly stated. 
-Do not add assumptions or require outside knowledge."""
+Do not add assumptions or require outside knowledge. Do not return anything except the question itself. 
+Phrase the question as if the text will NOT be shown to the user, without referencing the text."""
 
 # out = open(Path("dataset.jsonl"), "w", encoding="utf-8")
-out = open(Path("TrainingSet/cbre2025.jsonl"), "w", encoding="utf-8")
+out = open(Path("TrainingSet/next.jsonl"), "w", encoding="utf-8")
 for item in Path("./Reports/current").iterdir():
     if not item.is_file() or item.stat().st_size == 0 or item.name.startswith("."):
         continue
@@ -76,8 +77,8 @@ for item in Path("./Reports/current").iterdir():
         header = item.name
         paragraph = ""
         for page_num, page in enumerate(doc):
-            # if page_num < 20:
-            #     continue
+            if page_num <= 1:
+                continue
             try: 
                 page_dict = page.get_text("dict")
             except Exception as e:
@@ -92,36 +93,27 @@ for item in Path("./Reports/current").iterdir():
                     for span in line["spans"]:
                         font_size = span["size"]
                         flags = span["flags"]
-                        # print("Font size: " + f"{font_size}" + " and text: " + span["text"] + " and isBold: " + f"{flags & 16}" + " and isItalic: " + f"{flags & 2}")
-                        # if (span["size"] == 20
-                        #     or span["size"] == 18
-                        #     or (span["size"] == 9.5 and (span["flags"] &16) and not (span["flags"] & 2))        # 9.5, bold, not italic
-                        #     or (span["size"] == 12 and not (span["flags"] & 16) and not (span["flags"] & 2))    # 12, not bold, not italic
-                        # ):
-                        # if (font_size_is(span, 54)
-                        #     or font_size_is(span, 34)
-                        #     or font_size_is(span, 11) and span["flags"] & 16
-                        #     or font_size_is(span, 16)
-                        # ):
+                        # print("Font size: " + f"{font_size}" + ", text: " + span["text"] + ", isBold: " + f"{flags & 16}" + ", isItalic: " + f"{flags & 2}" + ", color: " + str(span["color"]))
                         # split off a prompt-response pair
-                        if (font_size_is(span, 36) or font_size_is(span, 14) or font_size_is(span, 19)):
+                        if ((font_size_is(span, 8) and span["flags"]&16 and span["color"]==23939)
+                        ):
 
-                            if header and paragraph and len(paragraph) >= 165: # and len(paragraph) <= 3000:
-                                chunks = split_paragraph(paragraph) if len(paragraph) > 3000 else [paragraph]
+                            if header and paragraph and len(paragraph) >= 185: # and len(paragraph) <= 3000:
+                                chunks = split_paragraph(paragraph) if len(paragraph) > 1000 else [paragraph]
                                 for chunk in chunks:
-                                    if len(chunk) >= 165:
+                                    if len(chunk) >= 185:
                                         
                                         # print("\nHEADER:", header)
-                                        # print("PARAGRAPH", clean_text(paragraph))
+                                        # print("PARAGRAPH", clean_text(chunk))
                                         # print("-" * 80)
-
-                                        while True:
+                                        # when true calls genai API, another such conditional below
+                                        while False:
                                             try:
-                                                paragraph = clean_text(paragraph)
+                                                chunk = clean_text(chunk)
                                                 interaction = client.interactions.create(
-                                                    # model="gemini-3.6-flash",
+                                                    # model="gemini-3.5-flash-lite",
                                                     model="gemini-3.1-flash-lite",
-                                                    input=f"{Prompt}, Header: {header}, Text: {paragraph}",
+                                                    input=f"{Prompt}, Header: {header}, Text: {chunk}",
                                                     generation_config={
                                                         "temperature": 0.3
                                                     }
@@ -130,12 +122,11 @@ for item in Path("./Reports/current").iterdir():
                                                     out.write(json.dumps({
                                                         "messages": [
                                                             {"role": "user", "content": interaction.output_text},
-                                                            {"role": "assistant", "content": paragraph}
+                                                            {"role": "assistant", "content": chunk}
                                                         ]
                                                     }) + "\n")
                                                     time.sleep(5)
                                                     break
-                                                    # print(f"Prompt: {interaction.output_text}\nResponse: {paragraph}\n\n")
                                                 else:
                                                     print("Failure")
                                                     time.sleep(5)
@@ -146,8 +137,6 @@ for item in Path("./Reports/current").iterdir():
                                                     time.sleep(30)
                                                 else:
                                                     print(f"Fix your code goofball: {e.code} - {e.message}")
-                                            # except ServiceError as e:
-                                            #     print(f"Google's fault: {e.code} - {e.message}")
                                             except APIError as e:
                                                 print(f"Something went wrong: {e.code} - {e.message}")
                                                 break
@@ -155,39 +144,35 @@ for item in Path("./Reports/current").iterdir():
                             # set new header and reset paragraph
                             header = span["text"]
                             paragraph = ""
-                        # if span["size"] == 9.5:
-                        # if font_size_is(span, 10):
-                        # if 9.5 <= span["size"] <= 10.5:
-                        if (font_size_is(span, 11) or font_size_is(span, 12)):
+                        if (font_size_is(span, 8.5) and not span["flags"]&16):
                             if span["text"].strip() and not is_noise(span["text"]):
                                 paragraph += span["text"] + " "
 
-        if header and paragraph and len(paragraph) >= 165: # and len(paragraph) <= 3000:
-            chunks = split_paragraph(paragraph) if (len(paragraph) > 3000) else [paragraph]
+        if header and paragraph and len(paragraph) >= 185:
+            chunks = split_paragraph(paragraph) if (len(paragraph) > 1000) else [paragraph]
             for chunk in chunks:
-                if len(chunk) >= 165:
+                if len(chunk) >= 185:
 
                     # print("\nHEADER:", header)
-                    # print("PARAGRAPH", clean_text(paragraph))
+                    # print("PARAGRAPH", clean_text(chunk))
                     # print("-" * 80)
-
+                    # when True calls genai API
                     while True:
                         try:
-                            paragraph = clean_text(paragraph)
+                            chunk = clean_text(chunk)
                             interaction = client.interactions.create(
-                                # model="gemini-3.6-flash",
+                                # model="gemini-3.5-flash-lite",
                                 model="gemini-3.1-flash-lite",
-                                input=f"{Prompt}, Header: {header}, Text: {paragraph}",
+                                input=f"{Prompt}, Header: {header}, Text: {chunk}",
                                 generation_config={
                                     "temperature": 0.3
                                 }
                             )
                             if interaction.status == "completed" and interaction.output_text:
-                                # print(f"Prompt: {interaction.output_text}\nResponse: {paragraph}\n\n")
                                 out.write(json.dumps({
                                     "messages": [
                                         {"role": "user", "content": interaction.output_text},
-                                        {"role": "assistant", "content": paragraph}
+                                        {"role": "assistant", "content": chunk}
                                     ]
                                 }) + "\n")
                                 time.sleep(5)
@@ -202,8 +187,6 @@ for item in Path("./Reports/current").iterdir():
                             else:
                                 print(f"Fix your code goofball: {e.code} - {e.message}")
                                 break
-                        # except ServiceError as e:
-                        #     print(f"Google's fault: {e.code} - {e.message}")
                         except APIError as e:
                             print(f"Something went wrong: {e.code} - {e.message}")
                             break
