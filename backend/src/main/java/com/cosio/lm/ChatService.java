@@ -44,10 +44,17 @@ public class ChatService {
     private final AccountRepository accountRepo;
     /** used to search through Users - distinctly from Accounts/Guests */
     private final UserRepository userRepo;
+    /** used to search through Documents*/
+    private final DocumentRepository docRepo;
 
     /** system prompt, to be shipped with each request to LM */
-    private final String system = "You are PIE, a real estate market analyst."
-        + "Provide concise, investment-focused commentary." 
+    private final String system = 
+        // "You are PIE, a real estate market analyst. "
+        "Your PIE, a real estate AI assistant. It is currently 2026"
+        + "Provide concise and brief investment-focused commentary. "
+        + "Use conversational history only to understand the current request and "
+        + "do not repeat, restate or respond to previous messages. "
+        + "Answer the user's latest request directly. "
         + "Base reasoning on supply, demand, interest rates, demographics, and valuation."
         + "Avoid speculation and avoid making up specific local statistics."
         + "Prioritize causal explanations and investment implications.";
@@ -55,7 +62,7 @@ public class ChatService {
     // auto-injection by Spring
     public ChatService(ConversationRepository convoRepo, GuestRepository guestRepo, 
         MessageRepository msgRepo, WebClient client, EmbeddingService embeddingService,
-        ChunkRepository chunkRepo, AccountRepository accountRepo, UserRepository userRepo) {
+        ChunkRepository chunkRepo, AccountRepository accountRepo, UserRepository userRepo, DocumentRepository docRepo) {
         this.convoRepo = convoRepo;
         this.guestRepo = guestRepo;
         this.msgRepo = msgRepo;
@@ -64,6 +71,7 @@ public class ChatService {
         this.chunkRepo = chunkRepo;
         this.accountRepo = accountRepo;
         this.userRepo = userRepo;
+        this.docRepo = docRepo;
     }
 
     /**
@@ -175,6 +183,9 @@ public class ChatService {
                 msgRepo.deleteAllByConversations(c.get());
                 convoRepo.delete(c.get());
             }
+            
+            // delete a guest's documents
+            docRepo.deleteByAccount(g);
             // delete guest
             guestRepo.delete(g);
         }

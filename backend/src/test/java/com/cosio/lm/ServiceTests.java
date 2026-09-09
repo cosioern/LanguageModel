@@ -78,7 +78,7 @@ public class ServiceTests {
     void setup() {
         ReflectionTestUtils.setField(as, "jwtSecret", Base64.getEncoder().encodeToString("your-test-secret-key-at-least-32-bytes-long".getBytes()));
         as.buildKey();
-        cs = new ChatService(convoRepo, guestRepo, messageRepo, client, esMock, chunkRepo, accountRepo, userRepo);
+        cs = new ChatService(convoRepo, guestRepo, messageRepo, client, esMock, chunkRepo, accountRepo, userRepo, docRepo);
     }
 
     // AccountService tests
