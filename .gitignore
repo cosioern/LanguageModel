@@ -16,7 +16,7 @@
 
 # Output Files
 /language-model/Training Round *
-/language-model/Adapters
+/language-model/Adapters/
 /language-model/Set_0
 /language-model/Set_1
 /language-model/Set_2
