@@ -40,7 +40,8 @@ function LandingPage({onSubmit}) {
     // checks if a user is logged in (accents profile pic button)
     useEffect(() => {
         async function checkStatus() {
-            const res = await fetch(`http://localhost:8080/authStatus`, {
+            // const res = await fetch(`http://localhost:8080/authStatus`, {
+            const res = await fetch(`/api/authStatus`, {
                 credentials: "include"
             });
             const isLoggedIn = await res.json();

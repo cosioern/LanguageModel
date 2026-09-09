@@ -45,7 +45,8 @@ function App() {
 
     // check for chat history
     useEffect(() => {
-        fetch(`http://localhost:8080/load`, {credentials:"include"})
+        //fetch(`http://localhost:8080/load`, {credentials:"include"})
+        fetch(`/api/load`)
             .then(res => res.json())
             .then(data => setChatHistory(data))
     }, []);

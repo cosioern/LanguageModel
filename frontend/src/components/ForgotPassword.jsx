@@ -23,7 +23,8 @@ function ForgotPassword() {
         formData.append("email", email);
 
         // send
-        const res = await fetch(`http://localhost:8080/forgotPassword`, {
+        // const res = await fetch(`http://localhost:8080/forgotPassword`, {
+        const res = await fetch(`/api/forgotPassword`, {
             method: "POST",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
             body: formData,

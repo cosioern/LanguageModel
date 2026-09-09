@@ -31,7 +31,8 @@ function Register() {
         formData.append("name", name);
         formData.append("birthDate", birthDate);
 
-        const res = await fetch(`http://localhost:8080/register`, {
+        // const res = await fetch(`http://localhost:8080/register`, {
+        const res = await fetch(`/api/register`, {
             method: "POST",
             // credentials: "include", no auto-login until verified
             headers: {"Content-Type": "application/x-www-form-urlencoded"},

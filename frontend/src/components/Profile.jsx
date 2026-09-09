@@ -26,7 +26,8 @@ function Profile() {
 
     // populate User's profile details
     useEffect(() => {
-        fetch(`http://localhost:8080/profile`, {
+        // fetch(`http://localhost:8080/profile`, {
+        fetch(`/api/profile`, {
             credentials: "include",
             headers: {"Content-type": "application/x-www-form-urlencoded"},
         })
@@ -57,7 +58,8 @@ function Profile() {
     // populate with User's documents
     useEffect(() => {
 
-        fetch(`http://localhost:8080/documents`, {
+        // fetch(`http://localhost:8080/documents`, {
+        fetch(`/api/documents`, {
             method: "GET",
             credentials: "include",
             headers: {"Content-type": "application/x-www-form-urlencoded"},
@@ -91,7 +93,8 @@ function Profile() {
      */
     async function deleteDocument(fileName, documentID) {
 
-        const res = await fetch(`http://localhost:8080/deleteDocument?documentID=${documentID}`, {
+        // const res = await fetch(`http://localhost:8080/deleteDocument?documentID=${documentID}`, {
+        const res = await fetch(`/api/deleteDocument?documentID=${documentID}`, {
             method: "DELETE",
             credentials: "include",
             headers: {"Content-type": "application/x-www-form-urlencoded"},

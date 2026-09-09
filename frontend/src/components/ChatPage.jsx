@@ -29,7 +29,8 @@ function ChatPage({initialPrompt, chatHistory}) {
         if (initialPrompt && initialPrompt.trim()) return; // skip when coming from landing page
 
         async function loadHistory() {
-            const res = await fetch(`http://localhost:8080/load`, {
+            // const res = await fetch(`http://localhost:8080/load`, {
+            const res = await fetch(`/api/load`, {
                 credentials: "include"
             });
             const history = await res.json();
@@ -54,7 +55,8 @@ function ChatPage({initialPrompt, chatHistory}) {
 
                 let assistantMessage = "";
                 setIsStreaming(true);
-                const res = await fetch(`http://localhost:8080/generate?prompt=${encodeURI(initialPrompt)}`, {
+                // const res = await fetch(`http://localhost:8080/generate?prompt=${encodeURI(initialPrompt)}`, {
+                const res = await fetch(`/api/generate?prompt=${encodeURI(initialPrompt)}`, {
                     credentials:"include", 
                     method:"POST"
                 });
@@ -82,7 +84,8 @@ function ChatPage({initialPrompt, chatHistory}) {
     // logs user in if credentials exist in browser
     useEffect(() => {
         async function checkStatus() {
-            const res = await fetch(`http://localhost:8080/authStatus`, {
+            // const res = await fetch(`http://localhost:8080/authStatus`, {
+            const res = await fetch(`/api/authStatus`, {
                 credentials: "include"
             });
             const isLoggedIn = await res.json();
@@ -149,7 +152,8 @@ function ChatPage({initialPrompt, chatHistory}) {
         const formData = new FormData();
         formData.append("document", file);
 
-        fetch(`http://localhost:8080/embedDocument`, {
+        // fetch(`http://localhost:8080/embedDocument`, {
+        fetch(`/api/embedDocument`, {
             method: "POST",
             credentials: "include",
             body: formData
@@ -192,7 +196,8 @@ function ChatPage({initialPrompt, chatHistory}) {
 
         let assistantMessage = "";
         setIsStreaming(true);
-        const res = await fetch(`http://localhost:8080/generate?prompt=${encodeURIComponent(userMessage)}`, {
+        // const res = await fetch(`http://localhost:8080/generate?prompt=${encodeURIComponent(userMessage)}`, {
+        const res = await fetch(`/api/generate?prompt=${encodeURIComponent(userMessage)}`, {
             credentials:"include",
             method:"POST"
         });

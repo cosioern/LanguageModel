@@ -37,7 +37,8 @@ function ResetPassword() {
             if (newPassword !== retype) {setStatus("Passwords Must Match"); return;}
             formData.append("newPassword", newPassword);
 
-            res = await fetch(`http://localhost:8080/resetPassword?token=${encodeURIComponent(token)}`, {
+            // res = await fetch(`http://localhost:8080/resetPassword?token=${encodeURIComponent(token)}`, {
+            res = await fetch(`/api/resetPassword?token=${encodeURIComponent(token)}`, {
                 method: "POST",
                 credentials: "include",
                 headers: {"Content-type" : "application/x-www-form-urlencoded"},
@@ -53,7 +54,8 @@ function ResetPassword() {
             formData.append("newPassword", newPassword);
             formData.append("currentPassword", currentPassword);
 
-            res = await fetch(`http://localhost:8080/changePassword`, {
+            // res = await fetch(`http://localhost:8080/changePassword`, {
+            res = await fetch(`/api/changePassword`, {
                 method: "POST",
                 credentials: "include",
                 headers: {"Content-type" : "application/x-www-form-urlencoded"},

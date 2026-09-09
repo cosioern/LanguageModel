@@ -7,7 +7,8 @@ function Right({isLoggedIn}) {
 
     async function handleLogout() {
 
-        const res = await fetch(`http://localhost:8080/logout`, {
+        // const res = await fetch(`http://localhost:8080/logout`, {
+        const res = await fetch(`/api/logout`, {
             method: "POST",
             credentials: "include",
         });

@@ -9,7 +9,8 @@ function Verify() {
 
     useEffect(() => {
         async function verify() {
-            const res = await fetch(`http://localhost:8080/verify?token=${encodeURIComponent(token)}`, {
+            // const res = await fetch(`http://localhost:8080/verify?token=${encodeURIComponent(token)}`, {
+            const res = await fetch(`/api/verify?token=${encodeURIComponent(token)}`, {
                 method: "GET",
                 credentials: "include",
             });

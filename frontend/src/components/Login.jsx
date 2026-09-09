@@ -17,7 +17,8 @@ function Login() {
         formData.append("username", username);
         formData.append("password", password);
 
-        const res = await fetch(`http://localhost:8080/login`, {
+        // const res = await fetch(`http://localhost:8080/login`, {
+        const res = await fetch(`/api/login`, {
             method: "POST",
             credentials: "include",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
