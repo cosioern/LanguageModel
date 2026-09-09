@@ -15,9 +15,11 @@ def clean_text(text) -> str:
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
+# check if size of a span of text is within a margin of tolerance
 def font_size_is(span, size, tolerance=0.1):
     return abs(span["size"] - size) < tolerance
 
+# remove training "noise" from text
 def is_noise(text):
     text = text.strip()
 
@@ -25,7 +27,10 @@ def is_noise(text):
         return True
 
     patterns = [
-        r"^Figure \d:"
+        r"\(Figure \d+\)",
+        r"\(Table \d+\)",
+        r"\(Map \d+\)",
+        r"^3-Year Housing Demand Forecast",
         r"^Intelligent Investment",
         r"^CBRE RESEARCH",
         r"^Source:",
@@ -38,6 +43,7 @@ def is_noise(text):
 
     return any(re.search(p, text, re.I) for p in patterns)
 
+# split large chunks of text to make smaller (better) training examples
 def split_paragraph(text, max_len=1000):
     sentences = re.split(r'(?<=[.!?])\s+', text)
     chunks = []
@@ -56,9 +62,10 @@ def split_paragraph(text, max_len=1000):
 # automatically loads API key from GEMINI_API_KEY environment variable
 client = genai.Client()
 Prompt = """Generate one question that can be answered completely and directly using only the following text. 
-The question should target the main idea or a key fact in the text. Do not ask about information that is not explicitly stated. 
+The question should target the main idea or a key fact in the text and should make note of the date if present. Do not ask about information that is not explicitly stated. 
 Do not add assumptions or require outside knowledge. Do not return anything except the question itself. 
-Phrase the question as if the text will NOT be shown to the user, without referencing the text."""
+Phrase the question as if the text will NOT be shown to the user, without referencing the text.
+The quetion should have a specific, non-ambiguous answer and should avoid being answerable by "it depends" or a simple yes/no. """
 
 # out = open(Path("dataset.jsonl"), "w", encoding="utf-8")
 out = open(Path("TrainingSet/next.jsonl"), "w", encoding="utf-8")
@@ -77,8 +84,8 @@ for item in Path("./Reports/current").iterdir():
         header = item.name
         paragraph = ""
         for page_num, page in enumerate(doc):
-            if page_num <= 1:
-                continue
+            # if page_num < 2:
+            #     continue
             try: 
                 page_dict = page.get_text("dict")
             except Exception as e:
@@ -93,24 +100,30 @@ for item in Path("./Reports/current").iterdir():
                     for span in line["spans"]:
                         font_size = span["size"]
                         flags = span["flags"]
+                        color = span["color"]
                         # print("Font size: " + f"{font_size}" + ", text: " + span["text"] + ", isBold: " + f"{flags & 16}" + ", isItalic: " + f"{flags & 2}" + ", color: " + str(span["color"]))
-                        # split off a prompt-response pair
-                        if ((font_size_is(span, 8) and span["flags"]&16 and span["color"]==23939)
-                        ):
+
+                        # headers - split off a prompt-response pair
+                        if (
+                            True # use commented print statement to determine the header and text font sizings and decorations
+                            ):
 
                             if header and paragraph and len(paragraph) >= 185: # and len(paragraph) <= 3000:
                                 chunks = split_paragraph(paragraph) if len(paragraph) > 1000 else [paragraph]
                                 for chunk in chunks:
                                     if len(chunk) >= 185:
-                                        
+
                                         # print("\nHEADER:", header)
                                         # print("PARAGRAPH", clean_text(chunk))
                                         # print("-" * 80)
+
                                         # when true calls genai API, another such conditional below
-                                        while False:
+                                        while True:
                                             try:
                                                 chunk = clean_text(chunk)
                                                 interaction = client.interactions.create(
+                                                    # free models with distinct usage limits
+                                                    # model="gemma-4-31b-it",
                                                     # model="gemini-3.5-flash-lite",
                                                     model="gemini-3.1-flash-lite",
                                                     input=f"{Prompt}, Header: {header}, Text: {chunk}",
@@ -144,7 +157,10 @@ for item in Path("./Reports/current").iterdir():
                             # set new header and reset paragraph
                             header = span["text"]
                             paragraph = ""
-                        if (font_size_is(span, 8.5) and not span["flags"]&16):
+                        # text
+                        if (
+                            font_size_is(span, 9.96) and not (flags&16)
+                            ):
                             if span["text"].strip() and not is_noise(span["text"]):
                                 paragraph += span["text"] + " "
 
@@ -156,11 +172,14 @@ for item in Path("./Reports/current").iterdir():
                     # print("\nHEADER:", header)
                     # print("PARAGRAPH", clean_text(chunk))
                     # print("-" * 80)
+
                     # when True calls genai API
                     while True:
                         try:
                             chunk = clean_text(chunk)
                             interaction = client.interactions.create(
+                                # free models with distinct usage limits
+                                # model="gemma-4-31b-it",
                                 # model="gemini-3.5-flash-lite",
                                 model="gemini-3.1-flash-lite",
                                 input=f"{Prompt}, Header: {header}, Text: {chunk}",

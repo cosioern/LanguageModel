@@ -15,8 +15,7 @@
 /language-model/Checkpoints3
 
 # Output Files
-/language-model/Adapters
-/language-model/Adapters2
+/language-model/Training Round *
 /language-model/Set_0
 /language-model/Set_1
 /language-model/Set_2
