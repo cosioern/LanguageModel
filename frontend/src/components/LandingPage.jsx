@@ -3,7 +3,7 @@ import Left from "./Left";
 import Right from "./Right";
 import "./LandingPage.css";
 
-const messages = [
+export const messages = [
     // {text: "'Sup Brah!", weight: 5},
     {text: "Lay It On Me Mama!", weight: 10},
     {text: "ChatGPT's Got Nothing On Me!", weight: 10},
@@ -110,7 +110,7 @@ function LandingPage({onSubmit}) {
                 rows={1}
             />
         </div>
-        <Right />
+        <Right isLoggedIn={isLogginIn}/>
     </div>
   );
 }

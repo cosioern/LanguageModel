@@ -40,7 +40,7 @@ function ChatPage({initialPrompt, chatHistory}) {
         loadHistory();
     }, []);
 
-    // initial  api call, seamless transition between LandingPage and ChatPage
+    // initial api call, seamless transition between LandingPage and ChatPage
     useEffect(() => {
         async function init() {
             // blocks while streaming
