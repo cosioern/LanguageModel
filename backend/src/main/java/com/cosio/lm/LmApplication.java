@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
+// import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -21,11 +21,11 @@ import com.pgvector.PGvector;
 
 import io.github.bucket4j.Bucket;
 
-import java.util.List;
+// import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+// import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+// import org.springframework.web.filter.CorsFilter;
 
 @SpringBootApplication
 @EnableScheduling

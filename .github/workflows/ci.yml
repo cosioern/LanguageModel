@@ -25,3 +25,20 @@ jobs:
           java-version: '21'
       - name: Run tests
         run: ./gradlew test
+  frontend-tests:
+    if: github.event.repository != null
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+     - uses: actions/checkout@v4
+     - name: Set Up Node
+       uses: actions/setup-node@v4
+       with: 
+         node-version: '20'
+     - name: Install dependencies
+       run: npm install 
+     - name: Run tests
+       run: npm test
+
