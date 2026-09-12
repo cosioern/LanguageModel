@@ -51,7 +51,7 @@ beforeEach(() => {
     );
 });
 
-// test that the correct useEffects run and that i
+// test that the correct useEffects run
 test("renders the chat page", async () => {
     // ChatPage is normally accessed through a user submitting a prompt (initialPrompt) from LandingPage
     render(<ChatPage initialPrompt={"Nonempty prompt"} chatHistory={[]} />);
@@ -60,8 +60,6 @@ test("renders the chat page", async () => {
     expect(screen.getByTestId("right")).toBeInTheDocument;
     expect(screen.getByPlaceholderText("Ask anything...")).toBeInTheDocument;
 
-    const user = userEvent.setup();
-    const textarea = screen.getByPlaceholderText("Ask anything...");
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(fetch).toHaveBeenCalledWith("/api/authStatus", {credentials: "include"});
     expect(fetch).toHaveBeenCalledWith(
@@ -80,7 +78,6 @@ test("updates the prompt when user types", async () => {
 });
 
 test("submits the prompt when the user hits Enter", async () => {
-
     const user = userEvent.setup();
     render(<ChatPage initialPrompt={""} chatHistory={[]}/>);
 
@@ -93,7 +90,6 @@ test("submits the prompt when the user hits Enter", async () => {
         expect.objectContaining({credentials: "include"}, {method: "POST"}),
     );
     expect(fetch).toHaveBeenCalledTimes(3);
-
 });
 
 test("does nothing when the user hits Shift+Enter", async () => {
@@ -119,8 +115,6 @@ test("passes authentication staus to Left and Right compoents", async () => {
 
 test("calls load on refresh", async () => {
     render(<ChatPage initialPrompt={""} chatHistory={[]}/>);
-    // const user = userEvent.setup();
-
     expect(fetch).toHaveBeenCalledWith("/api/authStatus", {credentials: "include"});
     expect(fetch).toHaveBeenCalledWith("/api/load", {credentials: "include"});
     expect(fetch).not.toHaveBeenCalledWith("/api/embedDocument", {method: "POST", credentials: "include"});
@@ -129,11 +123,8 @@ test("calls load on refresh", async () => {
 
 //test embedDocument
 test("embed document feature", async () => {
-    
     const {container } = render(<ChatPage initialPrompt={""} chatHistory={[]}/>);
-    // const inputarea = screen.getByText("+");
     const user = userEvent.setup();
-    // user.click(inputarea);
     const fileinput = container.querySelector('input[type="file"]');
     const file = new File(["content"], "test.txt", {type: "text/plain"});
 

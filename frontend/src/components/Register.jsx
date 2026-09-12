@@ -19,10 +19,10 @@ function Register() {
         if (!username)  {setStatus("Enter a Username"); return;}
         if (!name)      {setStatus("Enter a Name"); return;}
         if (!email)     {setStatus("Enter an Email"); return;}
-        if (!birthDate) {setStatus("Enter a Birhdate"); return;}
+        if (!birthDate) {setStatus("Enter a Birthdate"); return;}
         if (!password)  {setStatus("Enter a Password"); return;}
         if (!emailRegex.test(email)) {setStatus("Invalid Email"); return;}
-        if (new Date(birthDate) >= new Date()) {setStatus("Enter a Valid Birthdate"); return;}
+        if (new Date(birthDate) >= new Date()) {setStatus("Invalid Birthdate"); return;}
 
         const formData = new URLSearchParams();
         formData.append("username", username);
