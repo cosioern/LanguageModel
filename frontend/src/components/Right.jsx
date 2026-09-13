@@ -2,7 +2,7 @@ import "./Right.css";
 import { useNavigate } from "react-router-dom";
 import ToggleTheme from "./ToggleTheme.jsx";
 
-function Right({isLoggedIn}) {
+function Right({isLoggedIn, setToast}) {
     const navigate = useNavigate();
 
     async function handleLogout() {
@@ -17,6 +17,7 @@ function Right({isLoggedIn}) {
             navigate("/");
         } else {
             // toast error
+            setToast({message: "Log Out Failed", type: "error"});
         }
 
     }
@@ -27,7 +28,7 @@ function Right({isLoggedIn}) {
             <div className="top-page">
                 <div className="button-holder">
                     {isLoggedIn ? (
-                        <><button onClick={handleLogout} className="logout">LogOut</button></>
+                        <><button onClick={handleLogout} className="logout">Log Out</button></>
                     ) : (
                         <><button onClick={() => navigate("/login")} className="login-button">Log In</button>
                         <button onClick={() => navigate("/register")} className="signin-button">Sign Up</button></>

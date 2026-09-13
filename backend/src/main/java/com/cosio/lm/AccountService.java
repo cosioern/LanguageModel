@@ -159,7 +159,8 @@ public class AccountService {
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(email);
         mail.setSubject("Verification Link");
-        mail.setText("Click to verify: http://localhost:5173/verify?token=" + verificationToken);
+        // mail.setText("Click to verify: http://localhost:5173/verify?token=" + verificationToken);
+        mail.setText("Click to Verify: https://punctuate-collide-juror.ngrok-free.dev" + verificationToken);
         
         // failing to send message goes up call chain and undoes user
         try {mailSender.send(mail);} 

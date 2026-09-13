@@ -252,7 +252,7 @@ function ChatPage({initialPrompt, chatHistory}) {
                 handleFileUpload={handleFileUpload}
                 isStreaming={isStreaming}
             />
-            <Right isLoggedIn={isLoggedIn}/>
+            <Right isLoggedIn={isLoggedIn} setToast={setToast}/>
 
             {toast && (
                 <div className={`toast toast-${toast.type}`}>

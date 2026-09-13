@@ -300,7 +300,7 @@ public class Controller {
     public void logout(@CookieValue(value = "token", required = true) String token, HttpServletResponse response) {
         User user = accountService.validateToken(token);
         if (user == null) {
-            response.setStatus(401);
+            response.setStatus(501);
             return;
         }
 
