@@ -112,9 +112,17 @@ Return:
 """
 @app.post("/embedDocument")
 async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
+
+    # files suffic validation
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in (".pdf", ".docx", ".txt"):
+        raise HTTPException(status_code=400, detail="Unsupported File Type")
+
+    if MOCK_MODE:
+        return [EmbeddedChunk(embedding=[0.0]*384, content="A mock for an embedded chunk.")]
+
     contents = await file.read()
     
-    suffix = Path(file.filename).suffix.lower()
     doc = None
     text = None
 
@@ -129,11 +137,8 @@ async def embeddings(file: UploadFile = File(...)) -> list[EmbeddedChunk]:
     elif suffix == ".txt":
         doc = contents.decode("utf-8")
         # probably don't need to do much restructuring
-    else:
-        raise HTTPException(status_code=400, detail="Unsupported File Type")
 
     # assume that doc is left as text after the restructuring above
-
     splitter = SentenceSplitter(
         chunk_size=512,
         chunk_overlap=50,
