@@ -11,6 +11,7 @@ I recommend setting up a Conda environment like so:
  - (no longer recommend) ~~pip install --upgrade torch --index-url https://download.pytorch.org/whl/cu128~~
  - pip install fastapi uvicorn python-docx llama-index sentence-transformers python-multipart
  - pip install google-genai  
+ - pip install pytest pytest-mock httpx
 
 Python 3.11 version is the newest that will most reliably work with the necessary dependencies. This torch build is geared towards allowing PyTorch to make use of CUDA cores on NVidia GPUs, tried on RTX3060ti. You're mileage will vary with different hardware.
 

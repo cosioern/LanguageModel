@@ -17,5 +17,8 @@ pull:
 pre:
 	$(PYTHON) preprocessor.py
 
+test:
+	pytest service_test.py
+
 microservice:
 	uvicorn microservice:app --host 0.0.0.0 --port 8000	
