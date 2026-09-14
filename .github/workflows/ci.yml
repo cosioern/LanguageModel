@@ -54,7 +54,7 @@ jobs:
        with:
         python-version: '3.11.15'
      - name: Install dependencies
-       run: pip install fastapi pytest pytest-mock httpx pydantic python-docx pymupdf llama-index sentence-transformers
+       run: pip install fastapi pytest pytest-mock httpx pydantic python-docx pymupdf llama-index-core sentence-transformers peft transformers torch
      - name: Run tests
        run: pytest service_test.py
        env:
