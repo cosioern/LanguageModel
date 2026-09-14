@@ -30,7 +30,7 @@ function ResetPassword() {
         e.preventDefault();
         let res;
         const formData = new URLSearchParams();
-        console.log("token:", token);
+        // console.log("token:", token);
         if (token) {
             if (!newPassword) {setStatus("Enter a password"); return;}
             if (!retype) {setStatus("Retype Your Password"); return;}
@@ -64,7 +64,6 @@ function ResetPassword() {
         }
 
         if (res.ok) {
-            // navigate("/chat");
             setToast({message: "Success. Redirecting to chat page.", type: "success"});
         } else if (res.status === 403) {
             setStatus("Wrong password");
@@ -128,7 +127,6 @@ function ResetPassword() {
             </form>
             <ToggleTheme/>
         </div>
-
 );
 }
 

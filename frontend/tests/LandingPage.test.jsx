@@ -23,10 +23,6 @@ vi.mock("../src/components/Right", () => ({
 }));
 
 
-// vi.mock("../src/components/Right", () => ({
-//     default: () => <div data-testid="right">Right</div>,
-// }));
-
 beforeEach(() => {
     vi.stubGlobal(
         "fetch",

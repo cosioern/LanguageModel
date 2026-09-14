@@ -122,7 +122,7 @@ test("calls load on refresh", async () => {
 });
 
 //test embedDocument
-test("embed document feature", async () => {
+test("upload document feature", async () => {
     const {container } = render(<ChatPage initialPrompt={""} chatHistory={[]}/>);
     const user = userEvent.setup();
     const fileinput = container.querySelector('input[type="file"]');
